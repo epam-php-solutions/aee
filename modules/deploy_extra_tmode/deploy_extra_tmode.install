@@ -1,0 +1,44 @@
+<?php
+
+/**
+ * @file
+ * The Deploy Extra test mode module install hooks.
+ */
+
+/**
+ * Implementation of hook_schema_alter().
+ */
+function deploy_extra_tmode_schema_alter(&$schema) {
+  // Add field tmode to existing deploy_plan schema.
+  if (isset($schema['deploy_plans'])) {
+    $schema['deploy_plans']['fields']['tmode'] = array(
+      'description' => 'Debug mode.',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    );
+  }
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function deploy_extra_tmode_install() {
+  $schema['deploy_plans'] = array();
+  deploy_extra_tmode_schema_alter($schema);
+  foreach ($schema['deploy_plans']['fields'] as $name => $spec) {
+    db_add_field('deploy_plans', $name, $spec);
+  }
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function deploy_extra_tmode_uninstall() {
+  $schema['deploy_plans'] = array();
+  deploy_extra_tmode_schema_alter($schema);
+  foreach ($schema['deploy_plans']['fields'] as $name => $spec) {
+    db_drop_field('deploy_plans', $name);
+  }
+}
+
