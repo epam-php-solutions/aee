@@ -4,3 +4,26 @@
  * @file
  * Module implementing extensions of Deploy module.
  */
+
+/**
+ * Implements hook_form_alter().
+ */
+function deploy_extra_form_alter(&$form, &$form_state, $form_id) {
+
+  if (isset($form_state['item']) && $form_id == 'ctools_export_ui_edit_item_wizard_form') {
+    $item = $form_state['item'];
+
+    // Make changes only for deploy plan edit form.
+    if ($item->table == 'deploy_plans') {
+
+      // Set weight property to locate our element after "debug" element.
+      $n = 1;
+      foreach ($form as $name => &$el) {
+        if (!strstr($name, '#') && !isset($el['#weight']) && $el['#type'] != 'hidden' && $el['#type'] != 'value') {
+          $el['#weight'] = $n;
+          $n += 2;
+        }
+      }
+    }
+  }
+}
