@@ -1,0 +1,6 @@
+name = Deploy extra import export
+description = Import|export entities data to form or to file with drush command support.
+package = Deployment
+core = 7.x
+
+dependencies[] = deploy_extra
