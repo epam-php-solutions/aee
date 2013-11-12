@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * @file deploy_extra_tmode.module
+ * TODO: Enter file description here.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function deploy_extra_tmode_menu() {
+  $items = array();
+  return $items;
+}
+
+/**
+ * Implements hook_deploy_entity_alter().
+ */
+function deploy_extra_tmode_deploy_entity_alter(&$entity, $entity_type) {
+  // TODO: Add some code here.
+}
+
+/**
+ * Implements hook_services_resources_alter().
+ */
+function deploy_extra_tmode_services_resources_alter(&$resources, &$endpoint) {
+  // TODO: Add some code here.
+}
