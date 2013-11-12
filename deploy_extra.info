@@ -1,0 +1,6 @@
+name = Deployment Extra
+description = Some extensions of Deploy module
+package = Deployment
+core = 7.x
+
+dependencies[] = deploy
