@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * @file
+ * The Deploy Extra test mode module install hooks.
+ */
+
+function deploy_extra_tmode_schema_alter(&$schema) {
+  // Add field tmode to existing schema.
+  $schema['deploy_plans']['fields']['tmode'] = array(
+    'description' => 'Debug mode.',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+}
