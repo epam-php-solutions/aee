@@ -21,7 +21,7 @@ function deploy_extra_form_alter(&$form, &$form_state, $form_id) {
       foreach ($form as $name => &$el) {
         if (!strstr($name, '#') && !isset($el['#weight']) && $el['#type'] != 'hidden' && $el['#type'] != 'value') {
           $el['#weight'] = $n;
-          $n += 2;
+          $n += 3;
         }
       }
     }
