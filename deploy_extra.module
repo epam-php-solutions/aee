@@ -14,7 +14,7 @@ function deploy_extra_form_alter(&$form, &$form_state, $form_id) {
     $item = $form_state['item'];
 
     // Make changes only for deploy plan edit form.
-    if ($item->table == 'deploy_plans') {
+    if ($item->table == 'deploy_plans' || $item->table == 'deploy_endpoints') {
 
       // Set weight property to locate our element after "debug" element.
       $n = 1;
