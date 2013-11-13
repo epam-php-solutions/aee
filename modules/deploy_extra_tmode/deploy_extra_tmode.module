@@ -15,72 +15,39 @@ function deploy_extra_tmode_menu() {
 }
 
 /**
- * Implements hook_deploy_operation_info().
+ * Implements hook_DeployServiceRestJsonAdv_form_alter().
+ * see configForm method in the DeployServiceRestJsonAdv class.
  */
-function deploy_extra_tmode_deploy_operation_info() {
-  return array(
-    'preprocess' => array(
-      array('callback' => 'deploy_extra_tmode_preprocess_operation'),
-    ),
+function deploy_extra_tmode_DeployServiceRestJsonAdv_form_alter(&$form, &$form_state, $config) {
+  // Settings for using test mode.
+  $form['tmode'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Test mode'),
+    '#description' => t('Check this to enable test mode without creating or updating entities on the endpoint side.'),
+    '#default_value' => $config['tmode'],
+    '#weight' => 8,
   );
 }
 
 /**
- * Preprocess operation callback.
- *
- * TODO Description
+ * Implements hook_DeployServiceRestJsonAdv_entity_alter().
+ * see deploy method in the DeployServiceRestJsonAdv class.
  */
-function deploy_extra_tmode_preprocess_operation($plan_name, $entity) {
-  // We can't use this operating to add additional metadata for each entity.
-  $plan = deploy_plan_load($plan_name);
-  if (!empty($plan->tmode) && isset($entity->__metadata)) {
-    // Add extra info into the entity->__metadata property.
+function deploy_extra_tmode_DeployServiceRestJsonAdv_entity_alter($entity, $config) {
+  if (!empty($config['tmode']) && isset($entity->__metadata)) {
     $metadata = &$entity->__metadata;
-    $metadata['deploy_extra']['tmode'] = $plan->tmode;
+    $metadata['deploy_extra']['tmode'] = $config['tmode'];
   }
 }
 
 /**
- * Implements hook_deploy_entity_alter().
+ * Implements hook_DeployServiceRestJsonAdv_config_alter().
+ * see __construct method in the DeployServiceRestJsonAdv class.
  */
-function deploy_extra_deploy_entity_alter($entity, $type) {
-  // We can't change entities.
-  // In this hook we don't have info about current deploy plan.
-}
-
-/**
- * Implements hook_form_alter().
- */
-function deploy_extra_tmode_form_alter(&$form, &$form_state, $form_id) {
-
-  if (isset($form_state['item']) && $form_id == 'ctools_export_ui_edit_item_wizard_form') {
-    $item = $form_state['item'];
-    if ($item->table == 'deploy_plans') {
-      $form['#submit'][] = 'deploy_extra_tmode_deployplan_edit_form_submit';
-
-      $form['tmode'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Test mode'),
-        '#description' => t('Check this to enable test mode without creating or updating entities on the endpoint side.'),
-        '#default_value' => $item->tmode,
-        '#weight' => 8,
-      );
-    }
-  }
-}
-
-/**
- * Submit callback for Deploy Plan edit form.
- *
- * @param $form
- * @param $form_state
- */
-function deploy_extra_tmode_deployplan_edit_form_submit(&$form, &$form_state) {
-  // Save form values in the item object.
-  if(isset($form_state['values']['tmode']) && $form_state['values']['tmode']) {
-    $item = &$form_state['item'];
-    $item->tmode = $form_state['values']['tmode'];
-  }
+function deploy_extra_tmode_DeployServiceRestJsonAdv_config_alter(&$config) {
+  $config += array(
+    'tmode' => FALSE,
+  );
 }
 
 /**
