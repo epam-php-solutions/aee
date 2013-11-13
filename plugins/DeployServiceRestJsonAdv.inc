@@ -27,7 +27,6 @@ class DeployServiceRestJsonAdv extends DeployServiceRest {
 
       // Let other modules have their say.
       drupal_alter(__CLASS__ . '_entity', $entity, $this->config);
-      drupal_debug($entity);
 
       $json_data = drupal_json_encode($entity);
       $this->config['headers']['Content-Type'] = 'application/json';
