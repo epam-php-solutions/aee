@@ -40,7 +40,7 @@ class DeployServiceRestJsonAdv extends DeployServiceRest {
       if (php_sapi_name() == 'cli-server') {
         $url = $this->config['url'] . '/' . $entity->__metadata['uri'];
       }
-      //$this->httpRequest($url, 'PUT', $json_data);
+      $this->httpRequest($url, 'PUT', $json_data);
     }
   }
 
