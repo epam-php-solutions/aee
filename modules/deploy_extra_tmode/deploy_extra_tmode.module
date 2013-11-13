@@ -9,20 +9,9 @@
  * Implements hook_menu().
  */
 function deploy_extra_tmode_menu() {
+  // TODO Add some code mess here.
   $items = array();
   return $items;
-}
-
-/**
- * Implements hook_deploy_entity_alter().
- */
-function deploy_extra_tmode_deploy_entity_alter(&$entity, $entity_type) {
-  if (empty($entity) || empty($entity_type)) {
-    return;
-  }
-
-  list(,, $bundle_name) = entity_extract_ids($entity_type, $entity);
-  $instances = field_info_instances($entity_type, $bundle_name);
 }
 
 /**
@@ -38,12 +27,25 @@ function deploy_extra_tmode_deploy_operation_info() {
 
 /**
  * Preprocess operation callback.
+ *
+ * TODO Description
  */
 function deploy_extra_tmode_preprocess_operation($plan_name, $entity) {
+  // We can't use this operating to add additional metadata for each entity.
   $plan = deploy_plan_load($plan_name);
-  if (!empty($plan->aggregator_config['delete_post_deploy'])) {
-    deploy_manager_delete_from_plan($plan->name, $entity->__metadata['type'], $entity);
+  if (!empty($plan->tmode) && isset($entity->__metadata)) {
+    // Add extra info into the entity->__metadata property.
+    $metadata = &$entity->__metadata;
+    $metadata['deploy_extra']['tmode'] = $plan->tmode;
   }
+}
+
+/**
+ * Implements hook_deploy_entity_alter().
+ */
+function deploy_extra_deploy_entity_alter($entity, $type) {
+  // We can't change entities.
+  // In this hook we don't have info about current deploy plan.
 }
 
 /**
@@ -63,8 +65,6 @@ function deploy_extra_tmode_form_alter(&$form, &$form_state, $form_id) {
         '#default_value' => $item->tmode,
         '#weight' => 8,
       );
-
-      dargs(); // TODO REMOVE
     }
   }
 }
@@ -79,7 +79,7 @@ function deploy_extra_tmode_deployplan_edit_form_submit(&$form, &$form_state) {
   // Save form values in the item object.
   if(isset($form_state['values']['tmode']) && $form_state['values']['tmode']) {
     $item = &$form_state['item'];
-    $item->tmode = 1;
+    $item->tmode = $form_state['values']['tmode'];
   }
 }
 
