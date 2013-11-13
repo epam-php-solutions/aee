@@ -7,8 +7,9 @@
 
 /**
  * Implementation of hook_schema_alter().
+ * TODO DELETE
  */
-function deploy_extra_tmode_schema_alter(&$schema) {
+function _deploy_extra_tmode_schema_alter(&$schema) {
   // Add field tmode to existing deploy_plan schema.
   if (isset($schema['deploy_plans'])) {
     $schema['deploy_plans']['fields']['tmode'] = array(
@@ -22,8 +23,9 @@ function deploy_extra_tmode_schema_alter(&$schema) {
 
 /**
  * Implementation of hook_install().
+ * TODO DELETE
  */
-function deploy_extra_tmode_install() {
+function _deploy_extra_tmode_install() {
   $schema['deploy_plans'] = array();
   deploy_extra_tmode_schema_alter($schema);
   foreach ($schema['deploy_plans']['fields'] as $name => $spec) {
@@ -33,8 +35,9 @@ function deploy_extra_tmode_install() {
 
 /**
  * Implementation of hook_uninstall().
+ * TODO DELETE
  */
-function deploy_extra_tmode_uninstall() {
+function _deploy_extra_tmode_uninstall() {
   $schema['deploy_plans'] = array();
   deploy_extra_tmode_schema_alter($schema);
   foreach ($schema['deploy_plans']['fields'] as $name => $spec) {
