@@ -1,0 +1,59 @@
+<?php
+
+/**
+ * @file
+ * This is the file description for Deploy Extra Import Export module.
+ */
+
+// Translation context.
+define('DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT', 'deploy_extra_import_export');
+
+// Endpoints table of deploy module.
+define('DEPLOY_ENDPOINTS_TABLE_NAME', 'deploy_endpoints');
+
+function deploy_extra_iex_form_ctools_export_ui_edit_item_wizard_form_alter(&$form, &$form_state, $form_id) {
+  // Use in translation context.
+  $context = array('context' => DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT);
+
+//  print_r($form_state);exit;
+
+  if (isset($form['fieldset']['processor_plugin'])) {
+    $form['fieldset']['processor_plugin']['#options']['DeployProcessorForm'] = array(
+      'name' => t('Processor Form', array(), $context),
+      'description' => t('All entities are processed with the Batch API and output in form or file.'),
+    );
+
+//    $form['fieldset']['container'] = array(
+//      '#type' => 'container',
+//      '#states' => array(
+//        'invisible' => array(
+//          ':input[name="processor_plugin"]' => array(
+//            'value' => 'DeployProcessorForm',
+//          )
+//        ),
+//      ),
+//    );
+//
+//    $form['fieldset']['container']['endpoints'] = $form['fieldset']['endpoints'];
+//    // Unset duplicate.
+//    unset($form['fieldset']['endpoints']);
+  }
+}
+
+
+//function deploy_extra_import_export_ctools_plugin_post_alter(&$plugin, &$info) {
+//print_r($info);exit;
+//  if ($plugin['name'] == 'deploy_ui_plan') {
+//    $plugin['allowed operations']['config'] = array(
+//      'title' => t('Processor Configure')
+//    );
+//    print_r($info);exit;
+//    print_r($plugin);exit;
+//  }
+//}
+
+function deploy_extra_iex_batch_finished_operation($success, $results, $operations) {
+  if ($success) {
+    drupal_set_message(t('Plan %plan has been deployed and published to %endpoint.', array('%plan' => $plan->title, '%endpoint' => $endpoint->title)));
+  }
+}

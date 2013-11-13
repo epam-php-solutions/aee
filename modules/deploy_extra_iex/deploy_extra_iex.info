@@ -1,6 +1,9 @@
-name = Deploy extra import export
+name = Deploy extra iex
 description = Import|export entities data to form or to file with drush command support.
 package = Deployment
 core = 7.x
 
 dependencies[] = deploy_extra
+
+;Includes.
+files[] = plugins/DeployProcessorForm.inc

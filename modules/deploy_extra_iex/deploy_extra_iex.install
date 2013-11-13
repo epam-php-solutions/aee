@@ -1,0 +1,47 @@
+<?php
+
+/**
+ * @file
+ * The Deploy Extra Import Export module install hooks.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function deploy_extra_iex_install() {
+  // Initialize endpoint array.
+  $endpoint = array(
+    'name' => 'deploy_extra_iex_endpoint',
+    'title' => 'Deploy Extra IEX endpoint',
+    'description' => 'Required endpoint for DeployProcessorForm',
+    'debug' => 0,
+    'authenticator_plugin' => 'DeployAuthenticatorSession',
+    'authenticator_config' => array(
+      'username' => '',
+      'password' => '',
+    ),
+    'service_plugin' => 'DeployServiceRestJSON',
+    'service_config' => array(
+      'url' => '',
+    ),
+  );
+
+  // Try to add endpoint to endpoints table.
+  $transaction = db_transaction();
+  try {
+    drupal_write_record(DEPLOY_ENDPOINTS_TABLE_NAME, $endpoint);
+  }
+  catch(Exception $e) {
+    $transaction->rollback();
+    watchdog('deploy_extra_iex', $e->getMessage(), WATCHDOG_CRITICAL);
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function deploy_extra_iex_uninstall() {
+  db_delete(DEPLOY_ENDPOINTS_TABLE_NAME)
+    ->condition('name', 'deploy_extra_iex_endpoint')
+    ->execute();
+}
