@@ -1,9 +1,0 @@
-<?php
-
-/**
- * @file
- * This is the file description for Deploy Extra Import Export module.
- */
-
-// Translation context.
-define('DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT', 'deploy_extra_import_export');
