@@ -11,49 +11,104 @@ define('DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT', 'deploy_extra_import_expo
 // Endpoints table of deploy module.
 define('DEPLOY_ENDPOINTS_TABLE_NAME', 'deploy_endpoints');
 
+/**
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ */
 function deploy_extra_iex_form_ctools_export_ui_edit_item_wizard_form_alter(&$form, &$form_state, $form_id) {
   // Use in translation context.
   $context = array('context' => DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT);
 
-//  print_r($form_state);exit;
-
   if (isset($form['fieldset']['processor_plugin'])) {
+    // Add DeployProcessorForm to list of processors.
     $form['fieldset']['processor_plugin']['#options']['DeployProcessorForm'] = array(
       'name' => t('Processor Form', array(), $context),
       'description' => t('All entities are processed with the Batch API and output in form or file.'),
     );
 
-//    $form['fieldset']['container'] = array(
-//      '#type' => 'container',
-//      '#states' => array(
-//        'invisible' => array(
-//          ':input[name="processor_plugin"]' => array(
-//            'value' => 'DeployProcessorForm',
-//          )
-//        ),
-//      ),
-//    );
-//
-//    $form['fieldset']['container']['endpoints'] = $form['fieldset']['endpoints'];
-//    // Unset duplicate.
-//    unset($form['fieldset']['endpoints']);
+    // Add after build function.
+    $form['fieldset']['endpoints']['#after_build'] = array('deploy_extra_endpoints_after_build');
+
+    // Add validate function.
+    $form['fieldset']['endpoints']['#element_validate'][] = 'deploy_extra_validate_endpoints';
   }
 }
 
-
-//function deploy_extra_import_export_ctools_plugin_post_alter(&$plugin, &$info) {
-//print_r($info);exit;
-//  if ($plugin['name'] == 'deploy_ui_plan') {
-//    $plugin['allowed operations']['config'] = array(
-//      'title' => t('Processor Configure')
-//    );
-//    print_r($info);exit;
-//    print_r($plugin);exit;
-//  }
-//}
-
-function deploy_extra_iex_batch_finished_operation($success, $results, $operations) {
-  if ($success) {
-    drupal_set_message(t('Plan %plan has been deployed and published to %endpoint.', array('%plan' => $plan->title, '%endpoint' => $endpoint->title)));
+/**
+ * @param $element
+ * @param $form_state
+ * @return mixed
+ */
+function deploy_extra_endpoints_after_build($element, &$form_state) {
+  if (isset($element['deploy_extra_iex_endpoint'])) {
+    $element['deploy_extra_iex_endpoint']['#states'] = array(
+      'checked' => array(
+        ':input[name="processor_plugin"]' => array(
+          'value' => 'DeployProcessorForm',
+        )
+      ),
+      'readonly' => array(
+        ':input[name="processor_plugin"]' => array(
+          'value' => 'DeployProcessorForm',
+        )
+      ),
+    );
   }
+
+  return $element;
+}
+
+/**
+ * @param $element
+ * @param $form_state
+ */
+function deploy_extra_validate_endpoints($element, &$form_state) {
+  $values = $form_state['values'];
+  $condition = isset($values['processor_plugin']) && $values['processor_plugin'] == 'DeployProcessorForm';
+  if ($condition && empty($element['#value'])) {
+    // Use in translation context.
+    $context = array('context' => DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT);
+    form_error($element, t('For use Processor Form you must select at least one endpoint', array(), $context));
+  }
+}
+
+/**
+ * @param $success
+ * @param $results
+ * @param $operations
+ */
+function deploy_extra_iex_batch_finished_operation($success, $results, $operations) {
+  // Use in translation context.
+  $context = array('context' => DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT);
+
+  // Default values.
+  $status  = 'error';
+  $message = 'Import of entities has failed';
+
+  if ($success) {
+    $status  = 'status';
+    $message = 'Import of entities has done successfully!';
+  }
+
+  // Send the message.
+  drupal_set_message(t($message, array(), $context), $status);
+}
+
+/**
+ * Implements hook_menu().
+ */
+function deploy_extra_iex_menu() {
+  $items['admin/structure/deploy/import'] = array(
+    'title' => 'Import from file',
+    'description' => 'Import entities from file or form.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('deploy_extra_iex_entity_import_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 50,
+    'file' => 'deploy_extra_iex.admin.inc',
+  );
+
+  return $items;
 }
