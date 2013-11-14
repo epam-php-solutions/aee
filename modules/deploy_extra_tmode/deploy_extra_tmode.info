@@ -1,0 +1,7 @@
+name = Deploy test mode
+description = Add ability to perform deploy process in test mode
+package = Deployment
+core = 7.x
+
+dependencies[] = deploy_extra
+

@@ -1,0 +1,6 @@
+name = Deployment Extra Advanced Logging
+description = Advanced Logging System for Deploy module
+package = Deployment
+core = 7.x
+
+dependencies[] = deploy_extra

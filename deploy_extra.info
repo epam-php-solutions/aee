@@ -4,3 +4,5 @@ package = Deployment
 core = 7.x
 
 dependencies[] = deploy
+
+files[] = plugins/DeployServiceRestJsonAdv.inc
