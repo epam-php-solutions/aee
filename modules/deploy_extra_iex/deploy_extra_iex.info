@@ -4,6 +4,7 @@ package = Deployment
 core = 7.x
 
 dependencies[] = deploy_extra
+dependencies[] = uuid_services
 
 ;Includes.
 files[] = plugins/DeployProcessorForm.inc

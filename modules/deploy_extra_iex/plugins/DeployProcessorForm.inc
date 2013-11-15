@@ -33,41 +33,27 @@ class DeployProcessorForm extends DeployProcessorMemory {
     foreach ($iterator as $entity) {
       $this->data[] = $entity;
     }
+
+    // Save deployment_key in config array.
+    $this->config['uuid'] = $deployment_key;
   }
 
   public function publish($deployment_key, DeployEndpoint $endpoint, $lock_name = NULL) {
-    switch ($this->config['export_method']) {
-      case 'form':
-        $this->operations[] = array('deploy_extra_iex_form_output', array($this->data));
-        break;
+    $url = 'admin/structure/deploy';
+    $this->config['url'] = ($this->config['export_method'] == 'form' ? $url . '/export/' . $deployment_key : $url);
 
-      case 'file':
-        $data = drupal_json_encode($this->data);
-        $this->operations[] = array('deploy_extra_iex_file_output', array($data));
-        break;
+    $params = array(
+      $deployment_key,
+      $this->config['export_method'],
+      $this->config['destination'],
+      $this->aggregator->plan->name,
+      $lock_name,
+    );
 
-      case 'path':
-        try {
-          $path = trim($this->config['destination']);
-          $dir  = 'public://' . $path . '/';
+    $this->operations[]  = array('deploy_extra_iex_pass_deploy_info', $params);
 
-          if (!is_dir($dir)) {
-            mkdir($dir);
-          }
-
-          $filename = $this->aggregator->plan->name . '_' . date("d-m-Y(H.i)") . '.txt';
-          $file = fopen($dir . $filename, 'a+');
-          fwrite($file, drupal_json_encode($this->data));
-          deploy_log($deployment_key, DEPLOY_STATUS_PUBLISHED);
-        }
-        catch (Exception $e) {
-          if (!empty($lock_name)) {
-            lock_release($lock_name);
-          }
-          deploy_log($deployment_key, DEPLOY_STATUS_FAILED, $e);
-          throw $e;
-        }
-        break;
+    foreach ($this->data as $entity) {
+      $this->operations[]  = array('deploy_extra_iex_prepare_data_entities', array($entity));
     }
   }
 
@@ -76,16 +62,15 @@ class DeployProcessorForm extends DeployProcessorMemory {
     $batch = array(
       'title' => t('Deploying %plan', array('%plan' => $this->aggregator->plan->title)),
       'operations' => $this->operations,
-      'finished' => 'deploy_extra_iex_batch_finished_operation',
+      'init_message' => t('Exporting Batch is starting.'),
+      'progress_message' => t('Processed @current out of @total.'),
+      'error_message' => t('Exporting Batch has encountered an error.'),
+      'finished'   => 'deploy_extra_iex_batch_finished_operation',
     );
     batch_set($batch);
-    batch_process('admin/structure/deploy');
+    batch_process($this->config['url']);
   }
 
-  /**
-   * @param array $form_state
-   * @return array
-   */
   public function configForm(&$form_state) {
     return array(
       'export_method' => array(
@@ -101,7 +86,7 @@ class DeployProcessorForm extends DeployProcessorMemory {
         '#type' => 'textfield',
         '#field_prefix' => 'default/files/',
         '#default_value' => isset($this->config['destination']) ? $this->config['destination'] : '',
-        '#description' => t('The destination, where deploy files are located.'),
+        '#description' => t('The destination folder, where deploy files will located.'),
         '#states' => array(
           'visible' => array(
             ':input[name="processor_config[export_method]"]' => array(

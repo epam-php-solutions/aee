@@ -2,7 +2,7 @@
 
 /**
  * @file
- * This is the file description for Deploy Extra Import Export module.
+ * Includes the admin callbacks and functions for Deploy Extra Import Export module.
  */
 
 /**
@@ -42,6 +42,11 @@ function deploy_extra_iex_entity_import_form() {
           'value' => 'form',
         ),
       ),
+      'required' => array(
+        ':input[name="mode"]' => array(
+          'value' => 'form',
+        ),
+      ),
     ),
   );
 
@@ -61,6 +66,11 @@ function deploy_extra_iex_entity_import_form() {
         ),
       ),
       'visible' => array(
+        ':input[name="mode"]' => array(
+          'value' => 'file',
+        ),
+      ),
+      'required' => array(
         ':input[name="mode"]' => array(
           'value' => 'file',
         ),
@@ -98,19 +108,22 @@ function deploy_extra_iex_entity_import_form_submit($form, $form_state) {
   // Initialize operations array.
   $operations = array();
 
-  if ($file) {
-    // Get the data from file.
-    $data = file_get_contents($file->uri);
-    $data = drupal_json_decode($data);
+  if (!$file && empty($values['form'])) {
+    drupal_set_message("You can't to import empty data", 'error');
+    return $form;
+  }
 
-    if (!empty($data)) {
-      foreach($data as $entity) {
-        $operations[] = array('_uuid_services_entity_update', array(
-          $entity['__metadata']['type'],
-          $entity['uuid'],
-          $entity,
-        ));
-      }
+  // Get the data from file or form.
+  $data = $file ? file_get_contents($file->uri) : $values['form'];
+  $data = drupal_json_decode($data);
+
+  if (!empty($data)) {
+    foreach($data as $entity) {
+      $operations[] = array('_uuid_services_entity_update', array(
+        $entity['__metadata']['type'],
+        $entity['uuid'],
+        $entity,
+      ));
     }
   }
 
@@ -121,4 +134,43 @@ function deploy_extra_iex_entity_import_form_submit($form, $form_state) {
   );
   batch_set($batch);
   batch_process('admin/structure/deploy/import');
+}
+
+/**
+ * Export form.
+ */
+function deploy_extra_iex_entity_export_form($form, $form_state, $uuid = NULL) {
+  $cache = cache_get($uuid);
+  cache_clear_all($uuid, 'cache');
+
+  $form['export'] = array(
+    '#type' => 'textarea',
+    '#rows' => 20,
+    '#default_value' => !empty($cache) ? drupal_json_encode($cache->data) : '',
+  );
+
+  return $form;
+}
+
+/**
+ * Ajax callback for output the data for downloading.
+ *
+ * @param $uuid
+ *   Deployment key (unique uid).
+ */
+function deploy_extra_iex_ajax_deploy_download($uuid) {
+  $cache = cache_get($uuid);
+  cache_clear_all($uuid, 'cache');
+
+  $filename = 'export_entities_data.txt';
+  $content = drupal_json_encode($cache->data);
+
+  // Send headers.
+  header('Content-Description: File Transfer');
+  header('Content-Type:text/plain; charset=utf-8');
+  header('Content-Disposition: attachment; filename="' . $filename);
+  header('Content-Length: '.strlen($content));
+
+  // Send data.
+  echo $content;
 }

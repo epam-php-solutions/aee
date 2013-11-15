@@ -12,9 +12,43 @@ define('DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT', 'deploy_extra_import_expo
 define('DEPLOY_ENDPOINTS_TABLE_NAME', 'deploy_endpoints');
 
 /**
- * @param $form
- * @param $form_state
- * @param $form_id
+ * Implements hook_menu().
+ */
+function deploy_extra_iex_menu() {
+  $items['admin/structure/deploy/import'] = array(
+    'title' => 'Import data of entities',
+    'description' => 'Import entities from file or form.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('deploy_extra_iex_entity_import_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 50,
+    'file' => 'deploy_extra_iex.admin.inc',
+  );
+
+  $items['admin/structure/deploy/export/%uuid'] = array(
+    'title' => 'Export entities to form',
+    'page callback'  => 'drupal_get_form',
+    'page arguments' => array('deploy_extra_iex_entity_export_form', 4),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'deploy_extra_iex.admin.inc',
+  );
+
+  $items['ajax/deploy/download/%uuid'] = array(
+    'page callback'  => 'deploy_extra_iex_ajax_deploy_download',
+    'page arguments' => array(3),
+    'delivery callback' => 'ajax_deliver',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_CALLBACK,
+    'file' => 'deploy_extra_iex.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter_form().
+ *   Alter the form and add DeployProcessorForm to table of processors.
  */
 function deploy_extra_iex_form_ctools_export_ui_edit_item_wizard_form_alter(&$form, &$form_state, $form_id) {
   // Use in translation context.
@@ -36,19 +70,12 @@ function deploy_extra_iex_form_ctools_export_ui_edit_item_wizard_form_alter(&$fo
 }
 
 /**
- * @param $element
- * @param $form_state
- * @return mixed
+ * Add states behaviors to deploy_extra_iex_endpoint checkbox.
  */
 function deploy_extra_endpoints_after_build($element, &$form_state) {
   if (isset($element['deploy_extra_iex_endpoint'])) {
     $element['deploy_extra_iex_endpoint']['#states'] = array(
       'checked' => array(
-        ':input[name="processor_plugin"]' => array(
-          'value' => 'DeployProcessorForm',
-        )
-      ),
-      'readonly' => array(
         ':input[name="processor_plugin"]' => array(
           'value' => 'DeployProcessorForm',
         )
@@ -60,8 +87,7 @@ function deploy_extra_endpoints_after_build($element, &$form_state) {
 }
 
 /**
- * @param $element
- * @param $form_state
+ * Validation handler for table of endpoints.
  */
 function deploy_extra_validate_endpoints($element, &$form_state) {
   $values = $form_state['values'];
@@ -74,41 +100,127 @@ function deploy_extra_validate_endpoints($element, &$form_state) {
 }
 
 /**
+ * Batch finish function.
+ *
  * @param $success
+ *    Status of batch.
+ *
  * @param $results
+ *    Batch results.
+ *
  * @param $operations
+ *    Batch operations.
  */
 function deploy_extra_iex_batch_finished_operation($success, $results, $operations) {
   // Use in translation context.
   $context = array('context' => DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT);
 
-  // Default values.
-  $status  = 'error';
-  $message = 'Import of entities has failed';
+  $uuid = $results['uuid'];
+  $lock_name = $results['lock_name'];
 
-  if ($success) {
-    $status  = 'status';
-    $message = 'Import of entities has done successfully!';
+  try {
+    $status  = $success ? 'status' : 'error';
+    $message = $success ? 'Import of entities has done successfully!' : 'Import of entities has failed';
+    $message = t($message, array(), $context);
+
+    // Default value.
+    $suffix = '';
+
+    switch ($results['export_method']) {
+      case 'form':
+        cache_set($uuid, $results['entities'], 'cache', CACHE_TEMPORARY);
+        drupal_set_message($message, $status);
+        drupal_goto('admin/structure/deploy/export/' . $uuid);
+        break;
+
+      case 'file':
+        cache_set($uuid, $results['entities'], 'cache', CACHE_TEMPORARY);
+        $file_link = l('export_entities_data.txt', 'ajax/deploy/download/' . $uuid);
+        $suffix = t('You can download it here !file', array('!file' => $file_link));
+        break;
+
+      case 'path':
+        $path = trim($results['destination']);
+        $dir  = 'public://' . $path . '/';
+
+        // Check if directory is exist.
+        if (!is_dir($dir)) {
+          mkdir($dir);
+        }
+
+        $filename = $results['plan_name'] . '_' . date("d-m-Y(H.i)") . '.txt';
+        $file = fopen($dir . $filename, 'a+');
+        fwrite($file, drupal_json_encode($results['entities']));
+        break;
+    }
+
+    // Send the message.
+    drupal_set_message($message . $suffix, $status);
+
+    // Set the successful status to deploy.
+    deploy_log($uuid, DEPLOY_STATUS_PUBLISHED);
   }
-
-  // Send the message.
-  drupal_set_message(t($message, array(), $context), $status);
+  catch (Exception $e) {
+    if (!empty($lock_name)) {
+      lock_release($lock_name);
+    }
+    deploy_log($uuid, DEPLOY_STATUS_FAILED, $e);
+    throw $e;
+  }
 }
 
 /**
- * Implements hook_menu().
+ * Load function for uuid.
+ *   Check that uuid is correct.
+ *
+ * @param null $uuid
+ *   Unique UID.
+ *
+ * @return bool|null
  */
-function deploy_extra_iex_menu() {
-  $items['admin/structure/deploy/import'] = array(
-    'title' => 'Import from file',
-    'description' => 'Import entities from file or form.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('deploy_extra_iex_entity_import_form'),
-    'access arguments' => array('administer site configuration'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 50,
-    'file' => 'deploy_extra_iex.admin.inc',
-  );
+function uuid_load($uuid = NULL) {
+  if ($uuid) {
+    $query = db_select('deploy_deployments', 'dd')
+      ->fields('dd', array('did'))
+      ->condition('dd.uuid', $uuid)
+      ->execute()->fetchField();
+  }
 
-  return $items;
+  return !empty($query) ? $uuid : FALSE;
+}
+
+/**
+ * Batch operation for add to results array.
+ */
+function deploy_extra_iex_prepare_data_entities($entity, &$context = NULL) {
+  $context['results']['entities'][]  = $entity;
+}
+
+/**
+ * Batch operation for passing deploy info to results array.
+ *
+ * @param $uuid
+ *   Unique uid (deployment key).
+ *
+ * @param $export_method
+ *   Method of export (file, path, form).
+ *
+ * @param $destination
+ *   Destination folder for saving file, if choose the path method.
+ *
+ * @param $plan_name
+ *   Deploy plan name.
+ *
+ * @param $lock_name
+ *   The lock name.
+ *
+ * @param null $context
+ *   Array passed from operations.
+ */
+function deploy_extra_iex_pass_deploy_info($uuid, $export_method, $destination, $plan_name, $lock_name, &$context = NULL) {
+  $context['results']['uuid'] = $uuid;
+  $context['results']['export_method'] = $export_method;
+  $context['results']['destination'] = $destination;
+  $context['results']['plan_name'] = $plan_name;
+  $context['results']['lock_name'] = $lock_name;
 }
