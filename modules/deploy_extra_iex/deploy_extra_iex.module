@@ -103,15 +103,17 @@ function deploy_extra_validate_endpoints($element, &$form_state) {
  * Batch finish function.
  *
  * @param $success
- *    Status of batch.
+ *   Status of batch.
  *
  * @param $results
- *    Batch results.
+ *   Batch results
  *
  * @param $operations
- *    Batch operations.
+ *   Batch operations.
+ *
+ * @throws Exception
  */
-function deploy_extra_iex_batch_finished_operation($success, $results, $operations) {
+function deploy_extra_iex_export_batch_finished_operation($success, $results, $operations) {
   // Use in translation context.
   $context = array('context' => DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT);
 
@@ -120,7 +122,7 @@ function deploy_extra_iex_batch_finished_operation($success, $results, $operatio
 
   try {
     $status  = $success ? 'status' : 'error';
-    $message = $success ? 'Import of entities has done successfully!' : 'Import of entities has failed';
+    $message = $success ? 'Export of entities has done successfully!' : 'Export of entities has failed';
     $message = t($message, array(), $context);
 
     // Default value.
@@ -130,6 +132,7 @@ function deploy_extra_iex_batch_finished_operation($success, $results, $operatio
       case 'form':
         cache_set($uuid, $results['entities'], 'cache', CACHE_TEMPORARY);
         drupal_set_message($message, $status);
+        deploy_log($uuid, DEPLOY_STATUS_PUBLISHED);
         drupal_goto('admin/structure/deploy/export/' . $uuid);
         break;
 
@@ -167,6 +170,29 @@ function deploy_extra_iex_batch_finished_operation($success, $results, $operatio
     deploy_log($uuid, DEPLOY_STATUS_FAILED, $e);
     throw $e;
   }
+}
+
+/**
+ * Batch finish function.
+ *
+ * @param $success
+ *   Status of batch.
+ *
+ * @param $results
+ *   Batch results
+ *
+ * @param $operations
+ *   Batch operations.
+ */
+function deploy_extra_iex_import_batch_finished_operation($success, $results, $operations) {
+  // Use in translation context.
+  $context = array('context' => DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT);
+
+  $status  = $success ? 'status' : 'error';
+  $message = $success ? 'Import of entities has done successfully!' : 'Import of entities has failed';
+
+  // Send the message.
+  drupal_set_message(t($message, array(), $context), $status);
 }
 
 /**

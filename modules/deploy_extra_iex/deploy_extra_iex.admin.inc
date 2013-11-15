@@ -130,7 +130,7 @@ function deploy_extra_iex_entity_import_form_submit($form, $form_state) {
   $batch = array(
     'title' => t('Importing...'),
     'operations' => $operations,
-    'finished'   => 'deploy_extra_iex_batch_finished_operation',
+    'finished'   => 'deploy_extra_iex_import_batch_finished_operation',
   );
   batch_set($batch);
   batch_process('admin/structure/deploy/import');

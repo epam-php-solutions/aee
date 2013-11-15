@@ -65,7 +65,7 @@ class DeployProcessorForm extends DeployProcessorMemory {
       'init_message' => t('Exporting Batch is starting.'),
       'progress_message' => t('Processed @current out of @total.'),
       'error_message' => t('Exporting Batch has encountered an error.'),
-      'finished'   => 'deploy_extra_iex_batch_finished_operation',
+      'finished'   => 'deploy_extra_iex_export_batch_finished_operation',
     );
     batch_set($batch);
     batch_process($this->config['url']);
