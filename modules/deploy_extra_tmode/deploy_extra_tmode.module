@@ -6,6 +6,11 @@
  */
 
 /**
+ * Include the services hook implementations.
+ */
+module_load_include('inc', 'deploy_extra_tmode', 'deploy_extra_tmode.services');
+
+/**
  * Implements hook_menu().
  */
 function deploy_extra_tmode_menu() {
@@ -51,8 +56,17 @@ function deploy_extra_tmode_DeployServiceRestJsonAdv_config_alter(&$config) {
 }
 
 /**
- * Implements hook_services_resources_alter().
+ * Implements hook_module_implements_alter().
  */
-function deploy_extra_tmode_services_resources_alter(&$resources, &$endpoint) {
-  // TODO: Add some code here.
+function deploy_extra_tmode_module_implements_alter(&$implementations, $hook) {
+  $imp = cache_get('module_implements', 'cache_bootstrap'); // TODO DELETE.
+  if ($hook == 'services_resources_alter') {
+    // Move deploy_extra_tmode_services_resources_alter() to the end of the list.
+    // module_implements() iterates through $implementations with a foreach
+    // loop which PHP iterates  in the order that the items were added,
+    // so to move an item to the end of the array, we remove it and then add it.
+    $group = $implementations['deploy_extra_tmode'];
+    unset($implementations['deploy_extra_tmode']);
+    $implementations['deploy_extra_tmode'] = $group;
+  }
 }

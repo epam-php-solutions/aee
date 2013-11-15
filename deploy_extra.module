@@ -45,3 +45,13 @@ function deploy_extra_deploy_services() {
     ),
   );
 }
+
+/**
+ * Helper function.
+ * Save variables in to watchdog.
+ *
+ * @param $data
+ */
+function deploy_extra_debug($data) {
+  watchdog('deploy_extra:debug', 'Debug vars: <pre>@info</pre>', array('@info' => print_r($data, 1)), WATCHDOG_DEBUG);
+}
