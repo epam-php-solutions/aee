@@ -143,10 +143,32 @@ function deploy_extra_iex_entity_export_form($form, $form_state, $uuid = NULL) {
   $cache = cache_get($uuid);
   cache_clear_all($uuid, 'cache');
 
+  // Export format.
+  $format = $cache->data['export_format'];
+
+  switch ($format) {
+    case 'json':
+      $data = drupal_json_encode($cache->data['entities']);
+      break;
+
+    case 'yaml':
+      // Load spyc library.
+      libraries_load('spyc');
+
+      $entities = array();
+      foreach($cache->data['entities'] as $entity) {
+        $entities[] = (array)$entity;
+      }
+
+      $spyc = new Spyc();
+      $data = $spyc->dump($entities);
+      break;
+  }
+
   $form['export'] = array(
     '#type' => 'textarea',
     '#rows' => 20,
-    '#default_value' => !empty($cache) ? drupal_json_encode($cache->data) : '',
+    '#default_value' => !empty($data) ? $data : '',
   );
 
   return $form;
@@ -163,13 +185,13 @@ function deploy_extra_iex_ajax_deploy_download($uuid) {
   cache_clear_all($uuid, 'cache');
 
   $filename = 'export_entities_data.txt';
-  $content = drupal_json_encode($cache->data);
+  $content = drupal_json_encode($cache->data['entities']);
 
   // Send headers.
   header('Content-Description: File Transfer');
   header('Content-Type:text/plain; charset=utf-8');
   header('Content-Disposition: attachment; filename="' . $filename);
-  header('Content-Length: '.strlen($content));
+  header('Content-Length: ' . strlen($content));
 
   // Send data.
   echo $content;

@@ -18,24 +18,11 @@ class DeployProcessorForm extends DeployProcessorMemory {
    */
   public $data = array();
 
-  protected function processOperations(Array $operations = array()) {
-    if (!empty($operations)) {
-      foreach ($this->aggregator as $entity) {
-        foreach ($operations as $operation) {
-          $this->operations[] = array($operation['callback'], array($this->aggregator->plan->name, $entity));
-        }
-      }
-    }
-  }
-
   public function deploy($deployment_key, DeployEndpoint $endpoint, $lock_name = NULL) {
     $iterator = $this->aggregator->getIterator();
     foreach ($iterator as $entity) {
       $this->data[] = $entity;
     }
-
-    // Save deployment_key in config array.
-    $this->config['uuid'] = $deployment_key;
   }
 
   public function publish($deployment_key, DeployEndpoint $endpoint, $lock_name = NULL) {
@@ -48,6 +35,7 @@ class DeployProcessorForm extends DeployProcessorMemory {
       $this->config['destination'],
       $this->aggregator->plan->name,
       $lock_name,
+      $this->config['export_format'],
     );
 
     $this->operations[]  = array('deploy_extra_iex_pass_deploy_info', $params);
@@ -72,13 +60,16 @@ class DeployProcessorForm extends DeployProcessorMemory {
   }
 
   public function configForm(&$form_state) {
+    // Use in translation context.
+    $context = array('context' => DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT);
     return array(
       'export_method' => array(
         '#type' => 'radios',
+        '#title' => t('Choose the export method', array(), $context),
         '#options' => array(
-          'form' => t('Push to form'),
-          'file' => t('Push to browser for downloading'),
-          'path' => t('Push to destination on server folder'),
+          'form' => t('Push to form', array(), $context),
+          'file' => t('Push to browser for downloading', array(), $context),
+          'path' => t('Push to destination on server folder', array(), $context),
         ),
         '#default_value' => 'form',
       ),
@@ -86,7 +77,7 @@ class DeployProcessorForm extends DeployProcessorMemory {
         '#type' => 'textfield',
         '#field_prefix' => 'default/files/',
         '#default_value' => isset($this->config['destination']) ? $this->config['destination'] : '',
-        '#description' => t('The destination folder, where deploy files will located.'),
+        '#description' => t('The destination folder, where deploy files will located.', array(), $context),
         '#states' => array(
           'visible' => array(
             ':input[name="processor_config[export_method]"]' => array(
@@ -94,6 +85,15 @@ class DeployProcessorForm extends DeployProcessorMemory {
             )
           ),
         ),
+      ),
+      'export_format' => array(
+        '#type' => 'radios',
+        '#title' => t('Choose the export format', array(), $context),
+        '#options' => array(
+          'json' => t('Json'),
+          'yaml' => t('Yaml'),
+        ),
+        '#default_value' => 'json',
       ),
     );
   }

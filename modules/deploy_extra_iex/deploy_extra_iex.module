@@ -130,14 +130,14 @@ function deploy_extra_iex_export_batch_finished_operation($success, $results, $o
 
     switch ($results['export_method']) {
       case 'form':
-        cache_set($uuid, $results['entities'], 'cache', CACHE_TEMPORARY);
+        cache_set($uuid, $results, 'cache', CACHE_TEMPORARY);
         drupal_set_message($message, $status);
         deploy_log($uuid, DEPLOY_STATUS_PUBLISHED);
         drupal_goto('admin/structure/deploy/export/' . $uuid);
         break;
 
       case 'file':
-        cache_set($uuid, $results['entities'], 'cache', CACHE_TEMPORARY);
+        cache_set($uuid, $results, 'cache', CACHE_TEMPORARY);
         $file_link = l('export_entities_data.txt', 'ajax/deploy/download/' . $uuid);
         $suffix = t('You can download it here !file', array('!file' => $file_link));
         break;
@@ -154,11 +154,12 @@ function deploy_extra_iex_export_batch_finished_operation($success, $results, $o
         $filename = $results['plan_name'] . '_' . date("d-m-Y(H.i)") . '.txt';
         $file = fopen($dir . $filename, 'a+');
         fwrite($file, drupal_json_encode($results['entities']));
+        $suffix = t('File name is %file', array('%file' => $filename));
         break;
     }
 
     // Send the message.
-    drupal_set_message($message . $suffix, $status);
+    drupal_set_message($message . ' ' . $suffix, $status);
 
     // Set the successful status to deploy.
     deploy_log($uuid, DEPLOY_STATUS_PUBLISHED);
@@ -240,13 +241,17 @@ function deploy_extra_iex_prepare_data_entities($entity, &$context = NULL) {
  * @param $lock_name
  *   The lock name.
  *
+ * @param $export_format
+ *   Export format (json, yaml).
+ *
  * @param null $context
  *   Array passed from operations.
  */
-function deploy_extra_iex_pass_deploy_info($uuid, $export_method, $destination, $plan_name, $lock_name, &$context = NULL) {
+function deploy_extra_iex_pass_deploy_info($uuid, $export_method, $destination, $plan_name, $lock_name, $export_format, &$context = NULL) {
   $context['results']['uuid'] = $uuid;
   $context['results']['export_method'] = $export_method;
-  $context['results']['destination'] = $destination;
+  $context['results']['export_format'] = $export_format;
+  $context['results']['destination']   = $destination;
   $context['results']['plan_name'] = $plan_name;
   $context['results']['lock_name'] = $lock_name;
 }
