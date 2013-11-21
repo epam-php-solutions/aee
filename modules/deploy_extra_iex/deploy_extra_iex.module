@@ -128,35 +128,51 @@ function deploy_extra_iex_export_batch_finished_operation($success, $results, $o
     // Default value.
     $suffix = '';
 
-    switch ($results['export_method']) {
-      case 'form':
-        cache_set($uuid, $results, 'cache', CACHE_TEMPORARY);
-        drupal_set_message($message, $status);
-        deploy_log($uuid, DEPLOY_STATUS_PUBLISHED);
-        drupal_goto('admin/structure/deploy/export/' . $uuid);
-        break;
+    $export_method = $results['export_method'];
+    $export_format = $results['export_format'];
 
-      case 'file':
-        cache_set($uuid, $results, 'cache', CACHE_TEMPORARY);
-        $file_link = l('export_entities_data.txt', 'ajax/deploy/download/' . $uuid);
-        $suffix = t('You can download it here !file', array('!file' => $file_link));
-        break;
+    // Load export formatter.
+    $formatter = deploy_extra_iex_get_export_format_plugins($export_format);
+    $class = new $formatter['handler']['class'];
+    $data  = $class->encodeData($results['entities']);
 
-      case 'path':
-        $path = trim($results['destination']);
-        $dir  = 'public://' . $path . '/';
+    $methods = module_invoke_all('deploy_extra_iex_methods');
 
-        // Check if directory is exist.
-        if (!is_dir($dir)) {
-          mkdir($dir);
-        }
-
-        $filename = $results['plan_name'] . '_' . date("d-m-Y(H.i)") . '.txt';
-        $file = fopen($dir . $filename, 'a+');
-        fwrite($file, drupal_json_encode($results['entities']));
-        $suffix = t('File name is %file', array('%file' => $filename));
-        break;
+    if (isset($methods[$export_method])) {
+      $function = $methods[$export_method]['export_callback'];
     }
+
+    $b = 111;
+//
+//    switch ($results['export_method']) {
+//      case 'form':
+//        cache_set($uuid, $results, 'cache', CACHE_TEMPORARY);
+//        drupal_set_message($message, $status);
+//        deploy_log($uuid, DEPLOY_STATUS_PUBLISHED);
+//        drupal_goto('admin/structure/deploy/export/' . $uuid);
+//        break;
+//
+//      case 'file':
+//        cache_set($uuid, $results, 'cache', CACHE_TEMPORARY);
+//        $file_link = l('export_entities_data.txt', 'ajax/deploy/download/' . $uuid);
+//        $suffix = t('You can download it here !file', array('!file' => $file_link));
+//        break;
+//
+//      case 'path':
+//        $path = trim($results['destination']);
+//        $dir  = 'public://' . $path . '/';
+//
+//        // Check if directory is exist.
+//        if (!is_dir($dir)) {
+//          mkdir($dir);
+//        }
+//
+//        $filename = $results['plan_name'] . '_' . date("d-m-Y(H.i)") . '.txt';
+//        $file = fopen($dir . $filename, 'a+');
+//        fwrite($file, drupal_json_encode($results['entities']));
+//        $suffix = t('File name is %file', array('%file' => $filename));
+//        break;
+//    }
 
     // Send the message.
     drupal_set_message($message . ' ' . $suffix, $status);
@@ -220,7 +236,7 @@ function uuid_load($uuid = NULL) {
  * Batch operation for add to results array.
  */
 function deploy_extra_iex_prepare_data_entities($entity, &$context = NULL) {
-  $context['results']['entities'][]  = $entity;
+  $context['results']['entities'][] = $entity;
 }
 
 /**
@@ -254,4 +270,96 @@ function deploy_extra_iex_pass_deploy_info($uuid, $export_method, $destination, 
   $context['results']['destination']   = $destination;
   $context['results']['plan_name'] = $plan_name;
   $context['results']['lock_name'] = $lock_name;
+}
+
+/**
+ * Implements hook_ctools_plugin_type().
+ *   Provides export formats.
+ */
+function deploy_extra_iex_ctools_plugin_type() {
+  return array(
+    'export_format' => array(
+      'cache' => TRUE,
+      'use hooks' => TRUE,
+      'classes' => array('handler'),
+    ),
+  );
+}
+
+/**
+ * @param null $id
+ * @return array
+ */
+function deploy_extra_iex_get_export_format_plugins($id = NULL) {
+  ctools_include('plugins');
+  return ctools_get_plugins('deploy_extra_iex', 'export_format', $id);
+}
+
+/**
+ * Implements hook_deploy_extra_iex_export_format().
+ */
+function deploy_extra_iex_deploy_extra_iex_export_format() {
+  $path = drupal_get_path('module', 'deploy_extra_iex') . '/plugins/export_formats';
+  return array(
+    'DeployExtraJSON' => array(
+      'name' => 'JSON',
+      'description' => 'Provides json export format.',
+      'handler' => array(
+        'class' => 'DeployExtraJSON',
+        'file'  => 'DeployExtraJSON.inc',
+        'path'  => $path,
+      ),
+    ),
+    'DeployExtraYaml' => array(
+      'name' => 'Yaml',
+      'description' => 'Provides yaml export format.',
+      'handler' => array(
+        'class' => 'DeployExtraYaml',
+        'file'  => 'DeployExtraYaml.inc',
+        'path'  => $path,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_deploy_extra_iex_methods().
+ */
+function deploy_extra_iex_deploy_extra_iex_methods() {
+  return array(
+    'form' => array(
+      'label' => 'Push to form',
+      'export_callback' => 'deploy_extra_iex_form_export',
+      'import_callback' => 'deploy_extra_iex_form_import',
+    ),
+    'file' => array(
+      'label' => 'Push to destination on server folder',
+      'export_callback' => 'deploy_extra_iex_file_export',
+      'import_callback' => 'deploy_extra_iex_file_import',
+    ),
+    'file_for_downloading' => array(
+      'label' => 'Push to browser for downloading',
+      'export_callback' => 'deploy_extra_iex_file_download_export',
+      'import_callback' => 'deploy_extra_iex_file_download_import',
+    ),
+  );
+}
+
+function deploy_extra_iex_form_export($uuid, $success, $results) {
+  // Use in translation context.
+  $context = array('context' => DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT);
+
+  // Default values.
+  $status  = 'error';
+  $message = 'Import of entities has failed';
+
+  // Override the values if result is success.
+  if ($success) {
+    $status  = 'status';
+    $message = 'Import of entities has done successfully!';
+  }
+
+  drupal_set_message(t($message, array(), $context), $status);
+  deploy_log($uuid, DEPLOY_STATUS_PUBLISHED);
+  drupal_goto('admin/structure/deploy/export/' . $uuid);
 }

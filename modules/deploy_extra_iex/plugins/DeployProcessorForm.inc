@@ -22,6 +22,9 @@ class DeployProcessorForm extends DeployProcessorMemory {
     $iterator = $this->aggregator->getIterator();
     foreach ($iterator as $entity) {
       $this->data[] = $entity;
+
+      // Let other modules have their say.
+      drupal_alter('deploy_extra_iex_entity', $entity);
     }
   }
 
@@ -38,6 +41,7 @@ class DeployProcessorForm extends DeployProcessorMemory {
       $this->config['export_format'],
     );
 
+    // Add to results params.
     $this->operations[]  = array('deploy_extra_iex_pass_deploy_info', $params);
 
     foreach ($this->data as $entity) {
@@ -62,16 +66,34 @@ class DeployProcessorForm extends DeployProcessorMemory {
   public function configForm(&$form_state) {
     // Use in translation context.
     $context = array('context' => DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT);
+
+    // Get plugins.
+    $formats = deploy_extra_iex_get_export_format_plugins();
+
+    // Initialize the options array.
+    $options = array();
+
+    // Fill the options array.
+    if (!empty($formats)) {
+      foreach($formats as $format) {
+        $options[$format['handler']['class']] = $format['name'];
+      }
+    }
+
+    $methods = array();
+    foreach (module_invoke_all('deploy_extra_iex_methods') as $method => $array) {
+      $methods[$method] = $array['label'];
+    }
+
+    // Let other modules have their say.
+    drupal_alter('deploy_extra_iex_methods_alter', $methods);
+
     return array(
       'export_method' => array(
         '#type' => 'radios',
         '#title' => t('Choose the export method', array(), $context),
-        '#options' => array(
-          'form' => t('Push to form', array(), $context),
-          'file' => t('Push to browser for downloading', array(), $context),
-          'path' => t('Push to destination on server folder', array(), $context),
-        ),
-        '#default_value' => 'form',
+        '#options' => $methods,
+        '#required' => TRUE,
       ),
       'destination' => array(
         '#type' => 'textfield',
@@ -87,13 +109,10 @@ class DeployProcessorForm extends DeployProcessorMemory {
         ),
       ),
       'export_format' => array(
-        '#type' => 'radios',
+        '#type'  => 'radios',
         '#title' => t('Choose the export format', array(), $context),
-        '#options' => array(
-          'json' => t('Json'),
-          'yaml' => t('Yaml'),
-        ),
-        '#default_value' => 'json',
+        '#options'  => $options,
+        '#required' => TRUE,
       ),
     );
   }

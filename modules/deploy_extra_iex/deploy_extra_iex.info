@@ -6,5 +6,12 @@ core = 7.x
 dependencies[] = deploy_extra
 dependencies[] = uuid_services
 
-;Includes.
+;Plugins.
 files[] = plugins/DeployProcessorForm.inc
+
+;Export formats plugins.
+files[] = plugins/export_format/DeployExtraJSON.inc
+files[] = plugins/export_format/DeployExtraYaml.inc
+
+;Includes
+files[] = includes/DeployExtraExportFormat.inc
