@@ -40,7 +40,7 @@ function _deploy_extra_log_update($entity_type, $uuid, $entity) {
     }
 
     // Perform update/save operations.
-    deloy_extra_entity_update($entity_type, $uuid, $entity, $config);
+    deloy_extra_import_entity($entity_type, $uuid, $entity, $config);
   }
 
   // Use native function for update/save operations
