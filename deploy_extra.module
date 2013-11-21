@@ -6,6 +6,11 @@
  */
 
 /**
+ * Include the services hook implementations.
+ */
+module_load_include('inc', 'deploy_extra', 'deploy_extra.core');
+
+/**
  * Implements hook_form_alter().
  */
 function deploy_extra_form_alter(&$form, &$form_state, $form_id) {
@@ -44,14 +49,4 @@ function deploy_extra_deploy_services() {
       ),
     ),
   );
-}
-
-/**
- * Helper function.
- * Save variables in to watchdog.
- *
- * @param $data
- */
-function deploy_extra_debug($data) {
-  watchdog('deploy_extra:debug', 'Debug vars: <pre>@info</pre>', array('@info' => print_r($data, 1)), WATCHDOG_DEBUG);
 }
