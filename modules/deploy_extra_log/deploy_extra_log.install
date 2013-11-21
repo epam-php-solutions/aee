@@ -77,6 +77,13 @@ function deploy_extra_log_schema_alter(&$schema) {
       'not null' => TRUE,
       'default' => 0,
     );
+
+    $schema['deploy_plans']['fields']['tmode'] = array(
+      'description' => 'Indicates if test mode is enabled',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    );
   }
 }
 
