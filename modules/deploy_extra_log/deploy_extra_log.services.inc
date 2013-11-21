@@ -23,7 +23,6 @@ function deploy_extra_log_services_resources_alter(&$resources, &$endpoint) {
  *
  */
 function _deploy_extra_log_update($entity_type, $uuid, $entity) {
-  $metadata = array();
   $config = array();
 
   // To config from entity metadata.
