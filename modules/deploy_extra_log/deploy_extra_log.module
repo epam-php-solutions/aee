@@ -4,3 +4,61 @@
  * @file
  * Advanced Logging System for Deploy module
  */
+
+/**
+ * Include the services hook implementations.
+ */
+module_load_include('inc', 'deploy_extra_log', 'deploy_extra_log.services');
+
+/**
+ * Implements hook_DeployServiceRestJsonAdv_form_alter().
+ */
+function deploy_extra_log_DeployServiceRestJsonAdv_form_alter(&$form, &$form_state, &$config) {
+  // Settings for using advanced logging mode
+  $form['adv_log'] = array(
+    '#title' => t('Advanced Logging'),
+    '#description' => t("Select this if the advanced logging mode should be enabled"),
+    '#type' => 'checkbox',
+    '#default_value' => $config['adv_log'],
+    '#weight' => 8,
+  );
+}
+
+/**
+ * Implements hook_DeployServiceRestJsonAdv_config_alter().
+ */
+function deploy_extra_log_DeployServiceRestJsonAdv_config_alter(&$config) {
+  $config += array(
+    'adv_log' => FALSE,
+  );
+}
+
+/**
+ * Implements hook_DeployServiceRestJsonAdv_entity_alter().
+ */
+function deploy_extra_log_DeployServiceRestJsonAdv_entity_alter(&$entity, &$config, $deployment_key) {
+
+  $entity->__metadata['deploy_extra']['deployment_key'] = $deployment_key;
+  if(isset($config['adv_log']) && $config['adv_log'] == 1) {
+    $entity->__metadata['deploy_extra']['adv_log'] = $config['adv_log'];
+  }
+
+}
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function deploy_extra_log_module_implements_alter(&$implementations, $hook) {
+  $imp = cache_get('module_implements', 'cache_bootstrap'); // TODO DELETE.
+  if ($hook == 'services_resources_alter') {
+    // Move deploy_extra_log_module_implements_alter() to the end of the list.
+    // module_implements() iterates through $implementations with a foreach
+    // loop which PHP iterates  in the order that the items were added,
+    // so to move an item to the end of the array, we remove it and then add it.
+    $group = $implementations['deploy_extra_log'];
+    unset($implementations['deploy_extra_log']);
+    $implementations['deploy_extra_log'] = $group;
+  }
+}
+
+
