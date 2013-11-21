@@ -23,23 +23,49 @@ function deploy_extra_log_services_resources_alter(&$resources, &$endpoint) {
  *
  */
 function _deploy_extra_log_update($entity_type, $uuid, $entity) {
-  $metadata = array(); $config = array();
+  $metadata = array();
+  $config = array();
 
   // To config from entity metadata.
   $to_config = deploy_extra_log_to_metadata();
 
   // Extract metadata from entity object.
-  if(isset($entity['__metadata']['deploy_extra'])) {
+  if (isset($entity['__metadata']['deploy_extra'])) {
     $metadata = $entity['__metadata']['deploy_extra'];
+
+    // Filling config array.
+    foreach ($to_config as $property) {
+      if (isset($metadata[$property])) {
+        $to_config[$property] = (bool) $metadata[$property];
+      }
+    }
+
+    // Perform update/save operations.
+    deloy_extra_entity_update($entity_type, $uuid, $entity, $config);
   }
 
-  // Filling config array.
-  foreach ($to_config as $property) {
-    if(isset($metadata[$property])) {
-      $to_config[$property] = (bool) $metadata[$property];
+  // Use native function for update/save operations
+  elseif (function_exists('_uuid_services_entity_update')) {
+    // Execute native uuid_services function.
+    _uuid_services_entity_update($entity_type, $uuid, $entity);
+
+  } else {
+    // just in case if the function name changed.
+    try {
+      $controller = entity_get_controller($entity_type);
+      if ($controller instanceof EntityAPIControllerInterface) {
+        $entity = $controller->create($entity);
+      }
+      else {
+        $entity = (object) $entity;
+      }
+      entity_uuid_save($entity_type, $entity);
+      return $entity;
+    }
+    catch (Exception $exception) {
+      watchdog_exception('uuid_services', $exception);
+      return services_error($exception, 406, $entity);
     }
   }
-
-  deloy_extra_entity_update($entity_type, $uuid, $entity, $config);
 }
 
