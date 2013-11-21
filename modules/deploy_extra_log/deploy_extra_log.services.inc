@@ -8,9 +8,9 @@ function deploy_extra_log_services_resources_alter(&$resources, &$endpoint) {
   foreach (entity_get_info() as $entity_type => $entity_info) {
     if (isset($entity_info['uuid']) && $entity_info['uuid'] == TRUE && isset($resources[$entity_type])) {
 
-      // Try to save function to.
-      // @TODO try to save function name in to static variable.
+      // Try to save function name to static variable.
       $old_callback = $resources[$entity_type]['operations']['update']['callback'];
+      _deploy_extra_log_old_save_callback($old_callback);
 
       // We should change only update callback.
       $resources[$entity_type]['operations']['update']['callback'] = '_deploy_extra_log_update';
@@ -44,12 +44,12 @@ function _deploy_extra_log_update($entity_type, $uuid, $entity) {
   }
 
   // Use native function for update/save operations
-  elseif (function_exists('_uuid_services_entity_update')) {
+  elseif (function_exists(_deploy_extra_log_old_save_callback())) {
     // Execute native uuid_services function.
-    _uuid_services_entity_update($entity_type, $uuid, $entity);
+    call_user_func(_deploy_extra_log_old_save_callback(), $entity_type, $uuid, $entity);
 
   } else {
-    // just in case if the function name changed.
+    // just in case.
     try {
       $controller = entity_get_controller($entity_type);
       if ($controller instanceof EntityAPIControllerInterface) {
@@ -66,5 +66,21 @@ function _deploy_extra_log_update($entity_type, $uuid, $entity) {
       return services_error($exception, 406, $entity);
     }
   }
+}
+
+/**
+ * Just storing old save/update callback.
+ *
+ * @param bool $callback
+ * @return bool
+ */
+function _deploy_extra_log_old_save_callback($callback = FALSE) {
+  $old_callback = &drupal_static(__FUNCTION__);
+
+  if (!isset($old_callback) || !empty($callback)) {
+    $old_callback = $callback;
+  }
+
+  return $old_callback;
 }
 
