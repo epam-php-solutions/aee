@@ -18,12 +18,13 @@ function deloy_extra_import_entity($entity_type, $uuid, $entity, $config) {
 
   // Settings.
   $adv_log = (isset($config['adv_log']) && !empty($config['adv_log'])) ? TRUE : FALSE;
+  $deployment_key = (isset($config['deployment_key']) && !empty($config['deployment_key'])) ? TRUE : FALSE;
   $tmode   = (isset($config['tmode']) && !empty($config['tmode'])) ? TRUE : FALSE;
   $skip    = (isset($config['skip']) && !empty($config['skip'])) ? TRUE : FALSE;
 
   // Perform logging process and return.
-  if ($adv_log) {
-    deploy_extra_import_log($entity_type, $uuid, $entity);
+  if ($adv_log && $deployment_key && function_exists('deploy_extra_import_log')) {
+    deploy_extra_import_log($entity_type, $uuid, $entity, $deployment_key);
   }
 
   // If enable tmode just do nothing more.
@@ -67,10 +68,6 @@ function deploy_extra_import_entity_save($entity_type, $uuid, $entity, $config) 
     watchdog_exception('deploy_extra', $exception);
     return services_error($exception, 406, $entity);
   }
-}
-
-function deploy_extra_import_log($entity_type, $uuid, $entity) {
-  // Logging system.
 }
 
 /**
