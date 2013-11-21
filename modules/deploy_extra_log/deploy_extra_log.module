@@ -88,4 +88,9 @@ function deploy_extra_log_to_metadata() {
   );
 }
 
-
+/**
+ * Implements hook_views_api().
+ */
+function deploy_extra_log_views_api() {
+  return array('api' => 3);
+}

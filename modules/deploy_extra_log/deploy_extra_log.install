@@ -1,8 +1,73 @@
 <?php
 
 /**
- * Implementation of hook_schema_alter().
- *
+ * Implementation of hook_schema().
+ */
+function deploy_extra_log_schema() {
+  $schema = array();
+
+  $schema['deploy_extra_import_log'] = array(
+    'description' => 'Base table holding deployment logs per import entity.',
+
+    'fields' => array(
+      'lid' => array(
+        'description' => 'Log ID.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'no export' => TRUE,
+      ),
+      'deployment_uuid' => array(
+        'description' => 'UUID reference to a deployment',
+        'type' => 'char',
+        'length' => 36,
+        'not null' => TRUE,
+      ),
+      'entity_uuid' => array(
+        'description' => 'UUID of Import Entity',
+        'type' => 'char',
+        'length' => 36,
+        'not null' => TRUE,
+      ),
+      'entity_vuuid' => array(
+        'description' => 'Revision UUID of Import Entity',
+        'type' => 'char',
+        'length' => 36,
+        'not null' => FALSE,
+      ),
+      'entity_type' => array(
+        'description' => 'Type of Import Entity',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+      ),
+      'status' => array(
+        'description' => 'A status code for the import entity.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'timestamp' => array(
+        'description' => 'Timestamp when this entity was imported.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'message' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+        'size' => 'big',
+        'description' => 'Complementary message, e.g. the exception in case of a failure.',
+      ),
+    ),
+    'primary key' => array('lid'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_schema_alter(). *
  */
 function deploy_extra_log_schema_alter(&$schema) {
   if (isset($schema['deploy_plans'])) {
@@ -37,5 +102,4 @@ function deploy_extra_log_uninstall() {
   foreach ($schema['deploy_plans']['fields'] as $name => $spec) {
     db_drop_field('deploy_plans', $name);
   }
-
 }
