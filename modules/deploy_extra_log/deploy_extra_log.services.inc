@@ -35,7 +35,7 @@ function _deploy_extra_log_update($entity_type, $uuid, $entity) {
     // Filling config array.
     foreach ($to_config as $property) {
       if (isset($metadata[$property])) {
-        $to_config[$property] = (bool) $metadata[$property];
+        $config[$property] = $metadata[$property];
       }
     }
 
