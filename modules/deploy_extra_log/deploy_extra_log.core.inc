@@ -28,4 +28,3 @@ function field_deploy_extra_check_entity_structure($entity_type, $uuid, $entity)
   }
   return $errors;
 }
-

@@ -15,42 +15,32 @@
  * @param $config
  */
 function deloy_extra_import_entity($entity_type, $uuid, $entity, $config) {
+  $only_check = FALSE;
 
-  // Settings.
-  $adv_log = (isset($config['adv_log']) && !empty($config['adv_log'])) ? TRUE : FALSE;
-  $deployment_key = (isset($config['deployment_key']) && !empty($config['deployment_key'])) ? TRUE : FALSE;
-  $tmode   = (isset($config['tmode']) && !empty($config['tmode'])) ? TRUE : FALSE;
-  $skip    = (isset($config['skip']) && !empty($config['skip'])) ? TRUE : FALSE;
+  // Settings preparation.
+  $config['adv_log']        = (isset($config['adv_log']) && !empty($config['adv_log'])) ? TRUE : FALSE;
+  $config['deployment_key'] = (isset($config['deployment_key']) && !empty($config['deployment_key'])) ? $config['deployment_key'] : FALSE;
+  $config['tmode']          = (isset($config['tmode']) && !empty($config['tmode'])) ? TRUE : FALSE;
+  $config['skip']           = (isset($config['skip']) && !empty($config['skip'])) ? TRUE : FALSE;
 
-  // Perform logging process and return.
-  if ($adv_log && $deployment_key && function_exists('deploy_extra_import_log')) {
-    deploy_extra_import_log($entity_type, $uuid, $entity, $deployment_key);
-  }
-
-  // If enable tmode just do nothing more.
-  if ($tmode) {
-    return;
-  }
+  // Add ability to change entity before executing save/update operation.
+  drupal_alter('deploy_extra_import_entity', $entity_type, $uuid, $entity, $config['deployment_key']);
 
   // If enable skip updates mode.
-  if ($skip) {
+  if ($config['skip']) {
     $id = entity_get_id_by_uuid($entity_type, array($uuid));
 
-    // Entity already exists. In skip mode - do nothing.
+    // Entity already exists. Enable tmode for this entity.
     if (!empty($id[$uuid])) {
-      return;
+      $config['tmode'] = TRUE;
     }
   }
 
   // Perform update/create process.
-  deploy_extra_import_entity_save($entity_type, $uuid, $entity, $config);
+  deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config);
 }
 
-function deploy_extra_import_entity_save($entity_type, $uuid, $entity, $config) {
-
-  // Add ability to change entity before executing save/update operation.
-  drupal_alter('deploy_extra_import_entity', $entity_type, $uuid, $entity, $config);
-
+function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) {
   try {
     $controller = entity_get_controller($entity_type);
     if ($controller instanceof EntityAPIControllerInterface) {
@@ -60,7 +50,15 @@ function deploy_extra_import_entity_save($entity_type, $uuid, $entity, $config) 
       $entity = (object) $entity;
     }
 
-    entity_uuid_save($entity_type, $entity);
+    // Perform logging process and return.
+    if ($config['adv_log'] && $config['deployment_key'] && function_exists('deploy_extra_import_log')) {
+      deploy_extra_import_log($entity_type, $uuid, $entity, $config['deployment_key']);
+    }
+
+    // Perform save/update operation.
+    if(!$config['tmode']) {
+      entity_uuid_save($entity_type, $entity);
+    }
 
     return $entity;
   }
@@ -76,6 +74,11 @@ function deploy_extra_import_entity_save($entity_type, $uuid, $entity, $config) 
  *
  * @param $data
  */
-function deploy_extra_debug($data) {
-  watchdog('deploy_extra:debug', 'Debug vars: <pre>@info</pre>', array('@info' => print_r($data, 1)), WATCHDOG_DEBUG);
+function deploy_extra_debug($data, $func = '') {
+  $prefix = '';
+  if(!empty($func)) {
+    $prefix = 'Function:' . $func . '<br> ';
+  }
+
+  watchdog('deploy_extra:debug', $prefix . 'Debug vars: <pre>@info</pre>', array('@info' => print_r($data, 1)), WATCHDOG_DEBUG);
 }

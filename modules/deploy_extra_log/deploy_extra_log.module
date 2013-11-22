@@ -21,6 +21,9 @@ module_load_include('inc', 'deploy_extra_log', 'deploy_extra_log.core');
  */
 function deploy_extra_import_log($entity_type, $uuid, $entity, $deployment_key) {
 
+  // @TODO How to improve this?
+  entity_make_entity_local($entity_type, $entity);
+
   $str_errors_log = module_invoke_all('deploy_extra_check_entity_structure', $entity_type, $uuid, $entity);
 
   foreach ($str_errors_log as $key => $error) {
