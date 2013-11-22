@@ -70,7 +70,7 @@ function deploy_extra_log_DeployServiceRestJsonAdv_entity_alter(&$entity, $confi
     $metadata = &$entity->__metadata;
     $to_metadata = deploy_extra_log_to_metadata();
     foreach ($to_metadata as $property) {
-      if(isset($config[$property])) {
+      if (isset($config[$property])) {
         $metadata['deploy_extra'][$property] = (bool) $config[$property];
       }
     }

@@ -43,13 +43,14 @@ function _deploy_extra_log_update($entity_type, $uuid, $entity) {
     deloy_extra_import_entity($entity_type, $uuid, $entity, $config);
   }
 
-  // Use native function for update/save operations
+  // Use native function for update/save operations.
   elseif (function_exists(_deploy_extra_log_old_save_callback())) {
     // Execute native uuid_services function.
     call_user_func(_deploy_extra_log_old_save_callback(), $entity_type, $uuid, $entity);
 
-  } else {
-    // just in case.
+  }
+  else {
+    // Just in case.
     try {
       $controller = entity_get_controller($entity_type);
       if ($controller instanceof EntityAPIControllerInterface) {
