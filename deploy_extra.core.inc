@@ -15,13 +15,9 @@
  * @param $config
  */
 function deloy_extra_import_entity($entity_type, $uuid, $entity, $config) {
-  $only_check = FALSE;
 
   // Settings preparation.
-  $config['adv_log']        = (isset($config['adv_log']) && !empty($config['adv_log'])) ? TRUE : FALSE;
-  $config['deployment_key'] = (isset($config['deployment_key']) && !empty($config['deployment_key'])) ? $config['deployment_key'] : FALSE;
-  $config['tmode']          = (isset($config['tmode']) && !empty($config['tmode'])) ? TRUE : FALSE;
-  $config['skip']           = (isset($config['skip']) && !empty($config['skip'])) ? TRUE : FALSE;
+  deploy_extra_import_settings_preparation($config);
 
   // Add ability to change entity before executing save/update operation.
   drupal_alter('deploy_extra_import_entity', $entity_type, $uuid, $entity, $config['deployment_key']);
@@ -66,6 +62,19 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
     watchdog_exception('deploy_extra', $exception);
     return services_error($exception, 406, $entity);
   }
+}
+
+/**
+ * Helper function.
+ * Fills the an array of settings.
+ *
+ * @param $config
+ */
+function deploy_extra_import_settings_preparation(&$config) {
+  $config['adv_log']        = (isset($config['adv_log']) && !empty($config['adv_log'])) ? TRUE : FALSE;
+  $config['deployment_key'] = (isset($config['deployment_key']) && !empty($config['deployment_key'])) ? $config['deployment_key'] : FALSE;
+  $config['tmode']          = (isset($config['tmode']) && !empty($config['tmode'])) ? TRUE : FALSE;
+  $config['skip']           = (isset($config['skip']) && !empty($config['skip'])) ? TRUE : FALSE;
 }
 
 /**
