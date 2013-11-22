@@ -8,12 +8,12 @@ function deploy_extra_log_services_resources_alter(&$resources, &$endpoint) {
   foreach (entity_get_info() as $entity_type => $entity_info) {
     if (isset($entity_info['uuid']) && $entity_info['uuid'] == TRUE && isset($resources[$entity_type])) {
 
-      // Try to save function name to static variable.
+      // Try to save old callback function name to variable.
       $old_callback = $resources[$entity_type]['operations']['update']['callback'];
-      _deploy_extra_log_old_save_callback($old_callback);
+      _deploy_extra_services_old_update_callback($old_callback);
 
       // We should change only update callback.
-      $resources[$entity_type]['operations']['update']['callback'] = '_deploy_extra_log_update';
+      $resources[$entity_type]['operations']['update']['callback'] = '_deploy_extra_services_update';
     }
   }
 }
@@ -22,11 +22,14 @@ function deploy_extra_log_services_resources_alter(&$resources, &$endpoint) {
  * Callback for the 'update' method.
  *
  */
-function _deploy_extra_log_update($entity_type, $uuid, $entity) {
+function _deploy_extra_services_update($entity_type, $uuid, $entity) {
   $config = array();
 
   // To config from entity metadata.
   $to_config = deploy_extra_log_to_metadata();
+
+  // Old services update/save callback.
+  $old_callback = _deploy_extra_services_old_update_callback();
 
   // Extract metadata from entity object.
   if (isset($entity['__metadata']['deploy_extra'])) {
@@ -44,9 +47,9 @@ function _deploy_extra_log_update($entity_type, $uuid, $entity) {
   }
 
   // Use native function for update/save operations.
-  elseif (function_exists(_deploy_extra_log_old_save_callback())) {
+  elseif (function_exists($old_callback)) {
     // Execute native uuid_services function.
-    call_user_func(_deploy_extra_log_old_save_callback(), $entity_type, $uuid, $entity);
+    call_user_func($old_callback, $entity_type, $uuid, $entity);
 
   }
   else {
@@ -75,13 +78,13 @@ function _deploy_extra_log_update($entity_type, $uuid, $entity) {
  * @param bool $callback
  * @return bool
  */
-function _deploy_extra_log_old_save_callback($callback = FALSE) {
-  $old_callback = &drupal_static(__FUNCTION__);
+function _deploy_extra_services_old_update_callback($callback = FALSE) {
 
-  if (!isset($old_callback) || !empty($callback)) {
-    $old_callback = $callback;
+  if (!empty($callback)) {
+    variable_set('deploy_extra_services_old_update_callback', $callback);
+    return $callback;
   }
 
-  return $old_callback;
+  return variable_get('deploy_extra_services_old_update_callback', '_uuid_services_entity_update');
 }
 
