@@ -80,19 +80,22 @@ class DeployProcessorForm extends DeployProcessorMemory {
       }
     }
 
+    // Let other modules add their options.
     $methods = array();
     foreach (module_invoke_all('deploy_extra_iex_methods') as $method => $array) {
-      $methods[$method] = $array['label'];
+      if ($array['export_label'] != 'none') {
+        $methods[$method] = $array['export_label'];
+      }
     }
 
-    // Let other modules have their say.
+    // Let other modules change the methods options.
     drupal_alter('deploy_extra_iex_methods_alter', $methods);
 
     return array(
       'export_method' => array(
         '#type' => 'radios',
         '#title' => t('Choose the export method', array(), $context),
-        '#options' => $methods,
+        '#options'  => $methods,
         '#required' => TRUE,
       ),
       'destination' => array(
@@ -103,7 +106,7 @@ class DeployProcessorForm extends DeployProcessorMemory {
         '#states' => array(
           'visible' => array(
             ':input[name="processor_config[export_method]"]' => array(
-              'value' => 'path',
+              'value' => 'file',
             )
           ),
         ),

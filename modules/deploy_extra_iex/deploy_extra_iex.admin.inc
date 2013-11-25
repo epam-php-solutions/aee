@@ -15,15 +15,48 @@ function deploy_extra_iex_entity_import_form() {
     '#title' => t('Import interface'),
   );
 
-  // Modes of import.
-  $form['import']['mode'] = array(
-    '#type' => 'radios',
-    '#title' => t('Choose mode'),
+  // Get plugins.
+  $formats = deploy_extra_iex_get_export_format_plugins();
+  $options = array();
+  if (!empty($formats)) {
+    foreach($formats as $format) {
+      $options[$format['handler']['class']] = $format['name'];
+    }
+  }
+
+  // Types of import.
+  $form['import']['config'] = array(
+    '#type'  => 'checkboxes',
+    '#title' => t('Choose methods'),
     '#options' => array(
-      'form' => t('Import from form'),
-      'file' => t('Import from file'),
+      'skip'  => t('Skip the existing entity'),
+      'tmode' => t('Use test mode'),
     ),
+  );
+
+  // Types of import.
+  $form['import']['types'] = array(
+    '#type' => 'radios',
+    '#title' => t('Choose methods'),
+    '#options' => $options,
     '#default_value' => 'form',
+    '#required' => TRUE,
+  );
+
+  $methods = array();
+  foreach (module_invoke_all('deploy_extra_iex_methods') as $method => $array) {
+    if ($array['import_label'] != 'none') {
+      $methods[$method] = $array['import_label'];
+    }
+  }
+
+  // Modes of import.
+  $form['import']['methods'] = array(
+    '#type'  => 'radios',
+    '#title' => t('Choose mode'),
+    '#options' => $methods,
+    '#default_value' => 'form',
+    '#required' => TRUE,
   );
 
   // Import textarea form.
@@ -33,17 +66,17 @@ function deploy_extra_iex_entity_import_form() {
     '#default_value' => '',
     '#states' => array(
       'enabled' => array(
-        ':input[name="mode"]' => array(
+        ':input[name="methods"]' => array(
           'value' => 'form',
         ),
       ),
       'visible' => array(
-        ':input[name="mode"]' => array(
+        ':input[name="methods"]' => array(
           'value' => 'form',
         ),
       ),
       'required' => array(
-        ':input[name="mode"]' => array(
+        ':input[name="methods"]' => array(
           'value' => 'form',
         ),
       ),
@@ -61,17 +94,17 @@ function deploy_extra_iex_entity_import_form() {
     ),
     '#states' => array(
       'enabled' => array(
-        ':input[name="mode"]' => array(
+        ':input[name="methods"]' => array(
           'value' => 'file',
         ),
       ),
       'visible' => array(
-        ':input[name="mode"]' => array(
+        ':input[name="methods"]' => array(
           'value' => 'file',
         ),
       ),
       'required' => array(
-        ':input[name="mode"]' => array(
+        ':input[name="methods"]' => array(
           'value' => 'file',
         ),
       ),
@@ -138,37 +171,17 @@ function deploy_extra_iex_entity_import_form_submit($form, $form_state) {
 
 /**
  * Export form.
+ *   Get data from cache and put them  to form.
  */
 function deploy_extra_iex_entity_export_form($form, $form_state, $uuid = NULL) {
-  $cache = cache_get($uuid);
-  cache_clear_all($uuid, 'cache');
-
-  // Export format.
-  $format = $cache->data['export_format'];
-
-  switch ($format) {
-    case 'json':
-      $data = drupal_json_encode($cache->data['entities']);
-      break;
-
-    case 'yaml':
-      // Load spyc library.
-      libraries_load('spyc');
-
-      $entities = array();
-      foreach($cache->data['entities'] as $entity) {
-        $entities[] = (array)$entity;
-      }
-
-      $spyc = new Spyc();
-      $data = $spyc->dump($entities);
-      break;
-  }
+  $cid   = 'deploy_extra_iex_' . $uuid;
+  $cache = cache_get($cid);
+  cache_clear_all($cid, 'cache');
 
   $form['export'] = array(
     '#type' => 'textarea',
     '#rows' => 20,
-    '#default_value' => !empty($data) ? $data : '',
+    '#default_value' => !empty($cache->data) ? $cache->data : '',
   );
 
   return $form;
@@ -181,7 +194,8 @@ function deploy_extra_iex_entity_export_form($form, $form_state, $uuid = NULL) {
  *   Deployment key (unique uid).
  */
 function deploy_extra_iex_ajax_deploy_download($uuid) {
-  $cache = cache_get($uuid);
+  $cid   = 'deploy_extra_iex_' . $uuid;
+  $cache = cache_get($cid);
   cache_clear_all($uuid, 'cache');
 
   $filename = 'export_entities_data.txt';

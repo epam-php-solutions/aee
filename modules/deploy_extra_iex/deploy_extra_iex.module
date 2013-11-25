@@ -54,7 +54,7 @@ function deploy_extra_iex_form_ctools_export_ui_edit_item_wizard_form_alter(&$fo
   // Use in translation context.
   $context = array('context' => DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT);
 
-  if (isset($form['fieldset']['processor_plugin'])) {
+  if (isset($form['aggregator_plugin'])) {
     // Add DeployProcessorForm to list of processors.
     $form['fieldset']['processor_plugin']['#options']['DeployProcessorForm'] = array(
       'name' => t('Processor Form', array(), $context),
@@ -100,7 +100,7 @@ function deploy_extra_validate_endpoints($element, &$form_state) {
 }
 
 /**
- * Batch finish function.
+ * Batch finish operation.
  *
  * @param $success
  *   Status of batch.
@@ -114,70 +114,28 @@ function deploy_extra_validate_endpoints($element, &$form_state) {
  * @throws Exception
  */
 function deploy_extra_iex_export_batch_finished_operation($success, $results, $operations) {
-  // Use in translation context.
-  $context = array('context' => DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT);
-
   $uuid = $results['uuid'];
   $lock_name = $results['lock_name'];
 
   try {
-    $status  = $success ? 'status' : 'error';
-    $message = $success ? 'Export of entities has done successfully!' : 'Export of entities has failed';
-    $message = t($message, array(), $context);
-
-    // Default value.
-    $suffix = '';
-
     $export_method = $results['export_method'];
     $export_format = $results['export_format'];
 
-    // Load export formatter.
+    // Load export formatter and encode the data of entities.
     $formatter = deploy_extra_iex_get_export_format_plugins($export_format);
     $class = new $formatter['handler']['class'];
     $data  = $class->encodeData($results['entities']);
 
+    // Put encoded data in cache.
+    cache_set('deploy_extra_iex_' . $uuid, $data, 'cache', CACHE_TEMPORARY);
+
+    // Invoke all methods.
     $methods = module_invoke_all('deploy_extra_iex_methods');
 
     if (isset($methods[$export_method])) {
       $function = $methods[$export_method]['export_callback'];
+      $function($success, $results);
     }
-
-    $b = 111;
-//
-//    switch ($results['export_method']) {
-//      case 'form':
-//        cache_set($uuid, $results, 'cache', CACHE_TEMPORARY);
-//        drupal_set_message($message, $status);
-//        deploy_log($uuid, DEPLOY_STATUS_PUBLISHED);
-//        drupal_goto('admin/structure/deploy/export/' . $uuid);
-//        break;
-//
-//      case 'file':
-//        cache_set($uuid, $results, 'cache', CACHE_TEMPORARY);
-//        $file_link = l('export_entities_data.txt', 'ajax/deploy/download/' . $uuid);
-//        $suffix = t('You can download it here !file', array('!file' => $file_link));
-//        break;
-//
-//      case 'path':
-//        $path = trim($results['destination']);
-//        $dir  = 'public://' . $path . '/';
-//
-//        // Check if directory is exist.
-//        if (!is_dir($dir)) {
-//          mkdir($dir);
-//        }
-//
-//        $filename = $results['plan_name'] . '_' . date("d-m-Y(H.i)") . '.txt';
-//        $file = fopen($dir . $filename, 'a+');
-//        fwrite($file, drupal_json_encode($results['entities']));
-//        $suffix = t('File name is %file', array('%file' => $filename));
-//        break;
-//    }
-
-    // Send the message.
-    drupal_set_message($message . ' ' . $suffix, $status);
-
-    // Set the successful status to deploy.
     deploy_log($uuid, DEPLOY_STATUS_PUBLISHED);
   }
   catch (Exception $e) {
@@ -328,38 +286,98 @@ function deploy_extra_iex_deploy_extra_iex_export_format() {
 function deploy_extra_iex_deploy_extra_iex_methods() {
   return array(
     'form' => array(
-      'label' => 'Push to form',
+      'export_label' => 'Push to form',
+      'import_label' => 'Import from form',
       'export_callback' => 'deploy_extra_iex_form_export',
       'import_callback' => 'deploy_extra_iex_form_import',
     ),
-    'file' => array(
-      'label' => 'Push to destination on server folder',
-      'export_callback' => 'deploy_extra_iex_file_export',
-      'import_callback' => 'deploy_extra_iex_file_import',
-    ),
     'file_for_downloading' => array(
-      'label' => 'Push to browser for downloading',
+      'export_label' => 'Push to browser for downloading',
+      'import_label' => 'none',
       'export_callback' => 'deploy_extra_iex_file_download_export',
       'import_callback' => 'deploy_extra_iex_file_download_import',
+    ),
+    'file' => array(
+      'export_label' => 'Push to destination on server folder',
+      'import_label' => 'Import from file',
+      'export_callback' => 'deploy_extra_iex_file_export',
+      'import_callback' => 'deploy_extra_iex_file_import',
     ),
   );
 }
 
-function deploy_extra_iex_form_export($uuid, $success, $results) {
+/**
+ * Form export callback.
+ *
+ * @param $success
+ * @param $results
+ */
+function deploy_extra_iex_form_export($success, $results) {
+  // Set message.
+  deploy_extra_iex_return_message($success);
+  drupal_goto('admin/structure/deploy/export/' . $results['uuid']);
+}
+
+/**
+ * File export callback.
+ *   Save the encoded data of entities to file.
+ *
+ * @param $success
+ * @param $results
+ */
+function deploy_extra_file_export($success, $results) {
+  $uuid  = $results['uuid'];
+  $cid   = 'deploy_extra_iex_' . $uuid;
+  $cache = cache_get($cid);
+  cache_clear_all($uuid, 'cache');
+
+  $path = trim($results['destination']);
+  $dir  = 'public://' . $path . '/';
+
+  // Check if directory is exist.
+  if (!is_dir($dir)) {
+    mkdir($dir);
+  }
+
+  $filename = $results['plan_name'] . '_' . date("d-m-Y(H.i)") . '.txt';
+  $file = fopen($dir . $filename, 'a+');
+  fwrite($file, $cache->data);
+  $suffix = t('File name is %file', array('%file' => $filename));
+  deploy_extra_iex_return_message($success, $suffix);
+}
+
+/**
+ * File for downloading export callback.
+ *
+ * @param $success
+ * @param $results
+ */
+function deploy_extra_iex_file_download_export($success, $results) {
+  $file_link = l('export_entities_data.txt', 'ajax/deploy/download/' . $results['uuid']);
+  $suffix = t('You can download it here !file', array('!file' => $file_link));
+  // Set message.
+  deploy_extra_iex_return_message($success, $suffix);
+}
+
+/**
+ * Return the message about status of export.
+ *
+ * @param $success
+ * @param string $suffix
+ */
+function deploy_extra_iex_return_message($success, $suffix = NULL) {
   // Use in translation context.
   $context = array('context' => DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT);
 
   // Default values.
   $status  = 'error';
-  $message = 'Import of entities has failed';
+  $message = 'Export of entities has failed';
 
   // Override the values if result is success.
   if ($success) {
     $status  = 'status';
-    $message = 'Import of entities has done successfully!';
+    $message = 'Export of entities has done successfully!' . ($suffix ? ' ' . $suffix : '');
   }
 
   drupal_set_message(t($message, array(), $context), $status);
-  deploy_log($uuid, DEPLOY_STATUS_PUBLISHED);
-  drupal_goto('admin/structure/deploy/export/' . $uuid);
 }
