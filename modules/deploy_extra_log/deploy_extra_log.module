@@ -28,6 +28,7 @@ function deploy_extra_import_check($entity_type, $uuid, $entity, $deployment_key
 
   foreach ($str_errors_log as $key => $error) {
     // Insert data to deploy extra import log.
+    deploy_extra_import_log();
   }
 }
 
@@ -52,6 +53,15 @@ function deploy_extra_log_DeployServiceRestJsonAdv_form_alter(&$form, &$form_sta
     '#default_value' => $config['tmode'],
     '#weight' => 8,
   );
+
+  // Settings to skip update operation.
+  $form['skip'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Skip update'),
+    '#description' => t('Check this to enable skip mode. If the material already exists update operation  will be skipped.'),
+    '#default_value' => $config['skip'],
+    '#weight' => 8,
+  );
 }
 
 /**
@@ -61,6 +71,7 @@ function deploy_extra_log_DeployServiceRestJsonAdv_config_alter(&$config) {
   $config += array(
     'adv_log' => FALSE,
     'tmode'   => FALSE,
+    'skip'    => FALSE,
   );
 }
 
@@ -105,6 +116,7 @@ function deploy_extra_log_to_metadata() {
     'adv_log',
     'tmode',
     'deployment_key',
+    'skip',
   );
 }
 
