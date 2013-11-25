@@ -6,6 +6,8 @@
  * Add ability to perform deploy process in test mode.
  */
 
+define('DEPLOY_EXTRA_LOG_TRANSLATE_CONTEXT', 'deploy_extra_log');
+
 /**
  * Include the services hook implementations.
  */
@@ -15,22 +17,6 @@ module_load_include('inc', 'deploy_extra_log', 'deploy_extra_log.services');
  * Include checking structure hook implementations.
  */
 module_load_include('inc', 'deploy_extra_log', 'deploy_extra_log.core');
-
-/*
- * Structure errors Logging system.
- */
-function deploy_extra_import_check($entity_type, $uuid, $entity, $deployment_key) {
-
-  // @TODO How to improve this?
-  entity_make_entity_local($entity_type, $entity);
-
-  $str_errors_log = module_invoke_all('deploy_extra_check_entity_structure', $entity_type, $uuid, $entity);
-
-  foreach ($str_errors_log as $key => $error) {
-    // Insert data to deploy extra import log.
-    deploy_extra_import_log();
-  }
-}
 
 /**
  * Implements hook_DeployServiceRestJsonAdv_form_alter().
