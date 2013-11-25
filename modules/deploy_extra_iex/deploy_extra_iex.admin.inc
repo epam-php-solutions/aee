@@ -6,13 +6,20 @@
  */
 
 /**
+ * Import form.
+ *
+ * @see deploy_extra_iex_entity_import_form_submit()
+ *
  * @return mixed
  */
 function deploy_extra_iex_entity_import_form() {
+  // Use in translation context.
+  $context = array('context' => DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT);
+
   // Fieldset.
   $form['import'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Import interface'),
+    '#title' => t('Import interface', array(), $context),
   );
 
   // Get plugins.
@@ -24,20 +31,21 @@ function deploy_extra_iex_entity_import_form() {
     }
   }
 
-  // Types of import.
+  // Config of import.
   $form['import']['config'] = array(
     '#type'  => 'checkboxes',
-    '#title' => t('Choose methods'),
+    '#title' => t('Configuration of import', array(), $context),
     '#options' => array(
-      'skip'  => t('Skip the existing entity'),
-      'tmode' => t('Use test mode'),
+      'adv_log' => t('Use advanced log', array(), $context),
+      'skip'    => t('Skip the existing entity', array(), $context),
+      'tmode'   => t('Use test mode', array(), $context),
     ),
   );
 
-  // Types of import.
-  $form['import']['types'] = array(
-    '#type' => 'radios',
-    '#title' => t('Choose methods'),
+  // Formats of import.
+  $form['import']['format'] = array(
+    '#type'  => 'radios',
+    '#title' => t('Choose import formats', array(), $context),
     '#options' => $options,
     '#default_value' => 'form',
     '#required' => TRUE,
@@ -50,10 +58,10 @@ function deploy_extra_iex_entity_import_form() {
     }
   }
 
-  // Modes of import.
-  $form['import']['methods'] = array(
+  // Methods of import.
+  $form['import']['method'] = array(
     '#type'  => 'radios',
-    '#title' => t('Choose mode'),
+    '#title' => t('Choose mode', array(), $context),
     '#options' => $methods,
     '#default_value' => 'form',
     '#required' => TRUE,
@@ -62,21 +70,21 @@ function deploy_extra_iex_entity_import_form() {
   // Import textarea form.
   $form['import']['form'] = array(
     '#type'   => 'textarea',
-    '#title'  => t('Paste you code here'),
+    '#title'  => t('Paste you code here', array(), $context),
     '#default_value' => '',
     '#states' => array(
       'enabled' => array(
-        ':input[name="methods"]' => array(
+        ':input[name="method"]' => array(
           'value' => 'form',
         ),
       ),
       'visible' => array(
-        ':input[name="methods"]' => array(
+        ':input[name="method"]' => array(
           'value' => 'form',
         ),
       ),
       'required' => array(
-        ':input[name="methods"]' => array(
+        ':input[name="method"]' => array(
           'value' => 'form',
         ),
       ),
@@ -86,7 +94,7 @@ function deploy_extra_iex_entity_import_form() {
   // File upload form.
   $form['import']['upload'] = array(
     '#type'   => 'managed_file',
-    '#title'  => t('Upload deploy txt file'),
+    '#title'  => t('Upload deploy txt file', array(), $context),
     '#descripion' => t('Only txt files are allowed.'),
     '#upload_location'   => 'public://deploy_import/',
     '#upload_validators' => array(
@@ -94,17 +102,17 @@ function deploy_extra_iex_entity_import_form() {
     ),
     '#states' => array(
       'enabled' => array(
-        ':input[name="methods"]' => array(
+        ':input[name="method"]' => array(
           'value' => 'file',
         ),
       ),
       'visible' => array(
-        ':input[name="methods"]' => array(
+        ':input[name="method"]' => array(
           'value' => 'file',
         ),
       ),
       'required' => array(
-        ':input[name="methods"]' => array(
+        ':input[name="method"]' => array(
           'value' => 'file',
         ),
       ),
@@ -119,18 +127,23 @@ function deploy_extra_iex_entity_import_form() {
   // Submit button.
   $form['import']['actions']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Import'),
+    '#value' => t('Import', array(), $context),
   );
 
   return $form;
 }
 
 /**
- * @param $form
- * @param $form_state
+ * Submission handler for deploy_extra_iex_entity_import_form().
  */
 function deploy_extra_iex_entity_import_form_submit($form, $form_state) {
+  // Use in translation context.
+  $context = array('context' => DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT);
+
+  // Get values.
   $values = $form_state['values'];
+  $format = $values['format'];
+  $config = $values['config'];
 
   // Get file ID.
   $fid = $values['upload'];
@@ -142,20 +155,25 @@ function deploy_extra_iex_entity_import_form_submit($form, $form_state) {
   $operations = array();
 
   if (!$file && empty($values['form'])) {
-    drupal_set_message("You can't to import empty data", 'error');
+    drupal_set_message(t("You can't to import empty data", array(), $context), 'error');
     return $form;
   }
 
   // Get the data from file or form.
   $data = $file ? file_get_contents($file->uri) : $values['form'];
-  $data = drupal_json_decode($data);
+
+  // Load export formatter and decode the data of entities.
+  $formatter = deploy_extra_iex_get_export_format_plugins($format);
+  $class = new $formatter['handler']['class'];
+  $data  = $class->decodeData($data);
 
   if (!empty($data)) {
     foreach($data as $entity) {
-      $operations[] = array('_uuid_services_entity_update', array(
+      $operations[] = array('deloy_extra_import_entity', array(
         $entity['__metadata']['type'],
         $entity['uuid'],
         $entity,
+        $config,
       ));
     }
   }
@@ -174,9 +192,7 @@ function deploy_extra_iex_entity_import_form_submit($form, $form_state) {
  *   Get data from cache and put them  to form.
  */
 function deploy_extra_iex_entity_export_form($form, $form_state, $uuid = NULL) {
-  $cid   = 'deploy_extra_iex_' . $uuid;
-  $cache = cache_get($cid);
-  cache_clear_all($cid, 'cache');
+  $cache = deploy_extra_iex_get_cache($uuid);
 
   $form['export'] = array(
     '#type' => 'textarea',
@@ -194,12 +210,9 @@ function deploy_extra_iex_entity_export_form($form, $form_state, $uuid = NULL) {
  *   Deployment key (unique uid).
  */
 function deploy_extra_iex_ajax_deploy_download($uuid) {
-  $cid   = 'deploy_extra_iex_' . $uuid;
-  $cache = cache_get($cid);
-  cache_clear_all($uuid, 'cache');
-
+  $cache = deploy_extra_iex_get_cache($uuid);
   $filename = 'export_entities_data.txt';
-  $content = drupal_json_encode($cache->data['entities']);
+  $content  = drupal_json_encode($cache->data['entities']);
 
   // Send headers.
   header('Content-Description: File Transfer');
@@ -209,4 +222,19 @@ function deploy_extra_iex_ajax_deploy_download($uuid) {
 
   // Send data.
   echo $content;
+}
+
+/**
+ * Gets cache data of entities.
+ *   Returns cache data and clears the cache data in DB.
+ *
+ * @param $uuid
+ * @return mixed
+ */
+function deploy_extra_iex_get_cache($uuid) {
+  $cid   = 'deploy_extra_iex_' . $uuid;
+  $cache = cache_get($cid);
+  cache_clear_all($uuid, 'cache');
+
+  return $cache;
 }

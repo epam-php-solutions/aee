@@ -11,7 +11,7 @@
  * @param $entity
  *   The entity being exported.
  */
-function hook_deploy_extra_iex_entity_alter(&$entity) {
+function hook_deploy_extra_export_entity_alter(&$entity) {
 
 }
 
@@ -25,35 +25,27 @@ function hook_deploy_extra_iex_entity_alter(&$entity) {
  * @return array
  *   An array of methods. Each operation is an associative array that may
  *   contain the following key-value pairs:
- *   - "label": (required) The label for the method, displayed in the drop down menu.
+ *   - "export_label": (required) The label for the method, displayed in the drop down menu.
+ *   - "import_label": (required) The label for the method, displayed in the drop down menu.
  *   - "export_callback": (required) The function to call for the export operation.
- *   - "import_callback": (required) The function to call for the import operation.
- *   - "file": (optional) The path to the directory containing the file specified in "file".
- *     This defaults to the path to the module implementing the hook.
- *   - "path": (optional) The directory path of the theme or module, so that it doesn't need to be looked up.
+ *   If you use "none" in export or import label these labels will not display.
  */
 function hook_deploy_extra_iex_methods() {
   $methods = array(
     'form' => array(
-      'label' => 'Push to form',
-      'export_callback' => '',
-      'import_callback' => '',
-      'file' => '',
-      'path' => '',
+      'export_label' => 'Push to form',
+      'import_label' => 'Import from form',
+      'export_callback' => 'example_form_export_function',
     ),
     'file' => array(
-      'label' => 'Push to destination on server folder',
-      'export_callback' => '',
-      'import_callback' => '',
-      'file' => '',
-      'path' => '',
+      'export_label' => 'Push to destination on server folder',
+      'import_label' => 'Import from file',
+      'export_callback' => 'example_file_export_function',
     ),
     'file_for_downloading' => array(
-      'label' => 'Push to browser for downloading',
-      'export_callback' => '',
-      'import_callback' => '',
-      'file' => '',
-      'path' => '',
+      'export_label' => 'Push to browser for downloading',
+      'import_label' => 'none',
+      'export_callback' => 'example_file_downloading_export_function',
     ),
   );
 

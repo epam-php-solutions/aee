@@ -1,7 +1,6 @@
 <?php
 
-// if library is not exist disable the radio button (libraries_detect()).
-class DeployExtraYaml implements DeployExtraExportFormat {
+class DeployExtraYaml implements DeployExtraFormat {
 
   public function __construct($config = array()) {
     return $config;

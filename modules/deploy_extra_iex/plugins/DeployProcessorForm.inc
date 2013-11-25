@@ -24,7 +24,7 @@ class DeployProcessorForm extends DeployProcessorMemory {
       $this->data[] = $entity;
 
       // Let other modules have their say.
-      drupal_alter('deploy_extra_iex_entity', $entity);
+      drupal_alter('deploy_extra_export_entity', $entity);
     }
   }
 
@@ -65,7 +65,7 @@ class DeployProcessorForm extends DeployProcessorMemory {
 
   public function configForm(&$form_state) {
     // Use in translation context.
-    $context = array('context' => DEPLOY_EXTRA_IMPORT_EXPORT_TRANSLATE_CONTEXT);
+    $context = array('context' => DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT);
 
     // Get plugins.
     $formats = deploy_extra_iex_get_export_format_plugins();
