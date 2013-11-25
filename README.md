@@ -1,5 +1,5 @@
 ABOUT DEPLOY EXTRA
-==================
+------------------
 
 Extends the Deploy module functionality with the following:
 
