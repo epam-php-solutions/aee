@@ -48,7 +48,10 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
 
     // Perform logging process and return.
     if ($config['adv_log'] && $config['deployment_key'] && function_exists('deploy_extra_import_check')) {
-      deploy_extra_import_check($entity_type, $uuid, $entity, $config['deployment_key']);
+      // Create a clone of the entity object to check,
+      // that forbid directly changing entity object.
+      $clone = clone $entity;
+      deploy_extra_import_check($entity_type, $uuid, $clone, $config['deployment_key']);
     }
 
     // Perform save/update operation.
@@ -71,10 +74,10 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
  * @param $config
  */
 function deploy_extra_import_settings_preparation(&$config) {
-  $config['adv_log']        = (isset($config['adv_log']) && !empty($config['adv_log'])) ? TRUE : FALSE;
-  $config['deployment_key'] = (isset($config['deployment_key']) && !empty($config['deployment_key'])) ? $config['deployment_key'] : FALSE;
-  $config['tmode']          = (isset($config['tmode']) && !empty($config['tmode'])) ? TRUE : FALSE;
-  $config['skip']           = (isset($config['skip']) && !empty($config['skip'])) ? TRUE : FALSE;
+  $config['adv_log']        = !empty($config['adv_log']) ? TRUE : FALSE;
+  $config['deployment_key'] = !empty($config['deployment_key']) ? $config['deployment_key'] : FALSE;
+  $config['tmode']          = !empty($config['tmode']) ? TRUE : FALSE;
+  $config['skip']           = !empty($config['skip']) ? TRUE : FALSE;
 }
 
 /**
