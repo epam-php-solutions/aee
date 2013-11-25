@@ -12,6 +12,26 @@
 module_load_include('inc', 'deploy_extra_log', 'deploy_extra_log.services');
 
 /**
+ * Include checking structure hook implementations.
+ */
+module_load_include('inc', 'deploy_extra_log', 'deploy_extra_log.core');
+
+/*
+ * Structure errors Logging system.
+ */
+function deploy_extra_import_check($entity_type, $uuid, $entity, $deployment_key) {
+
+  // @TODO How to improve this?
+  entity_make_entity_local($entity_type, $entity);
+
+  $str_errors_log = module_invoke_all('deploy_extra_check_entity_structure', $entity_type, $uuid, $entity);
+
+  foreach ($str_errors_log as $key => $error) {
+    // Insert data to deploy extra import log.
+  }
+}
+
+/**
  * Implements hook_DeployServiceRestJsonAdv_form_alter().
  */
 function deploy_extra_log_DeployServiceRestJsonAdv_form_alter(&$form, &$form_state, &$config) {
@@ -54,7 +74,7 @@ function deploy_extra_log_DeployServiceRestJsonAdv_entity_alter(&$entity, $confi
     $to_metadata = deploy_extra_log_to_metadata();
     foreach ($to_metadata as $property) {
       if(isset($config[$property])) {
-        $metadata['deploy_extra'][$property] = (bool) $config[$property];
+        $metadata['deploy_extra'][$property] = $config[$property];
       }
     }
   }
@@ -88,4 +108,9 @@ function deploy_extra_log_to_metadata() {
   );
 }
 
-
+/**
+ * Implements hook_views_api().
+ */
+function deploy_extra_log_views_api() {
+  return array('api' => 3);
+}
