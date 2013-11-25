@@ -45,7 +45,7 @@ function deploy_extra_log_schema() {
         'description' => 'A status code for the import entity.',
         'type' => 'int',
         'not null' => TRUE,
-        'default' => 1,
+        'default' => 0,
       ),
       'timestamp' => array(
         'description' => 'Timestamp when this entity was imported.',
@@ -55,9 +55,15 @@ function deploy_extra_log_schema() {
       ),
       'message' => array(
         'type' => 'text',
-        'not null' => TRUE,
+        'not null' => FALSE,
         'size' => 'big',
         'description' => 'Complementary message, e.g. the exception in case of a failure.',
+      ),
+      'data' => array(
+        'description' => 'The additional serialized data.',
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
       ),
     ),
     'primary key' => array('lid'),
