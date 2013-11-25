@@ -47,8 +47,8 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
     }
 
     // Perform logging process and return.
-    if ($config['adv_log'] && $config['deployment_key'] && function_exists('deploy_extra_import_log')) {
-      deploy_extra_import_log($entity_type, $uuid, $entity, $config['deployment_key']);
+    if ($config['adv_log'] && $config['deployment_key'] && function_exists('deploy_extra_import_check')) {
+      deploy_extra_import_check($entity_type, $uuid, $entity, $config['deployment_key']);
     }
 
     // Perform save/update operation.

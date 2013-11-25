@@ -19,7 +19,7 @@ module_load_include('inc', 'deploy_extra_log', 'deploy_extra_log.core');
 /*
  * Structure errors Logging system.
  */
-function deploy_extra_import_log($entity_type, $uuid, $entity, $deployment_key) {
+function deploy_extra_import_check($entity_type, $uuid, $entity, $deployment_key) {
 
   // @TODO How to improve this?
   entity_make_entity_local($entity_type, $entity);
