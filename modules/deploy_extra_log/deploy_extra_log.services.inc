@@ -6,7 +6,7 @@
  */
 function deploy_extra_log_services_resources_alter(&$resources, &$endpoint) {
   foreach (entity_get_info() as $entity_type => $entity_info) {
-    if (isset($entity_info['uuid']) && $entity_info['uuid'] == TRUE && isset($resources[$entity_type])) {
+    if (!empty($entity_info['uuid']) && isset($resources[$entity_type])) {
 
       // Try to save old callback function name to variable.
       $old_callback = $resources[$entity_type]['operations']['update']['callback'];
