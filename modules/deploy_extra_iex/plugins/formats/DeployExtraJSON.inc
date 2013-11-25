@@ -1,6 +1,5 @@
 <?php
 
-
 class DeployExtraJSON implements DeployExtraFormat {
 
   public function __construct($config = array()) {
