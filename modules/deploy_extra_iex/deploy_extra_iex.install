@@ -41,7 +41,33 @@ function deploy_extra_iex_install() {
  * Implements hook_uninstall().
  */
 function deploy_extra_iex_uninstall() {
-  db_delete(DEPLOY_ENDPOINTS_TABLE_NAME)
+  db_delete('deploy_endpoints')
     ->condition('name', 'deploy_extra_iex_endpoint')
     ->execute();
+}
+
+/**
+ * Implements hook_requirements().
+ */
+function deploy_extra_iex_requirements($phase) {
+  $requirements = array();
+
+  if (in_array($phase, array('runtime', 'install'))) {
+    $t = get_t();
+    $library = libraries_detect('spyc');
+
+    if (empty($library['installed'])) {
+      $spyc_link = l($t('SPYC library'), $library['download url']);
+      $requirements['spyc_library'] = array(
+        'title'    => $t('Spyc Library'),
+        'severity' => REQUIREMENT_ERROR,
+        'description' => $t('You need to download the !spyc, extract the archive and place in the %path directory on your server.', array(
+          '!spyc' => $spyc_link,
+          '%path' => 'sites/all/libraries')
+        ),
+      );
+    }
+  }
+
+  return $requirements;
 }
