@@ -286,6 +286,11 @@ function deploy_extra_log_views_default_views() {
   $handler->display->display_options['fields']['message']['id'] = 'message';
   $handler->display->display_options['fields']['message']['table'] = 'deploy_extra_import_log';
   $handler->display->display_options['fields']['message']['field'] = 'message';
+  /* Sort criterion: Deploy Extra: Log ID */
+  $handler->display->display_options['sorts']['lid']['id'] = 'lid';
+  $handler->display->display_options['sorts']['lid']['table'] = 'deploy_extra_import_log';
+  $handler->display->display_options['sorts']['lid']['field'] = 'lid';
+  $handler->display->display_options['sorts']['lid']['order'] = 'DESC';
   /* Filter criterion: Deploy Extra: Deployment UUID */
   $handler->display->display_options['filters']['deployment_uuid']['id'] = 'deployment_uuid';
   $handler->display->display_options['filters']['deployment_uuid']['table'] = 'deploy_extra_import_log';
