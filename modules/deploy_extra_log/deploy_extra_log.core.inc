@@ -136,7 +136,3 @@ function node_deploy_extra_check_structure($entity_type, $entity) {
     return $messages;
   }
 }
-
-function deploy_extra_import_log($deployment_key, $uuid, $messages) {
-
-}
