@@ -1,5 +1,5 @@
 name = Deployment Extra
-description = Some extensions of Deploy module
+description = Extends the Deploy module functionality
 package = Deployment
 core = 7.x
 
