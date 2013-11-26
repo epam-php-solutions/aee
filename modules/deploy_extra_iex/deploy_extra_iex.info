@@ -10,8 +10,8 @@ dependencies[] = uuid_services
 files[] = plugins/DeployProcessorForm.inc
 
 ;Export formats plugins.
-files[] = plugins/formats/DeployExtraJSON.inc
-files[] = plugins/formats/DeployExtraYaml.inc
+files[] = plugins/export_formats/DeployExtraJSON.inc
+files[] = plugins/export_formats/DeployExtraYaml.inc
 
 ;Includes
 files[] = includes/DeployExtraFormat.inc

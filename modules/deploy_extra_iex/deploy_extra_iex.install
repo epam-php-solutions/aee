@@ -11,7 +11,7 @@
 function deploy_extra_iex_install() {
   // Initialize endpoint array.
   $endpoint = array(
-    'name' => 'deploy_extra_iex_endpoint',
+    'name'  => 'deploy_extra_iex_endpoint',
     'title' => 'Deploy Extra IEX endpoint',
     'description' => 'Required endpoint for DeployProcessorForm',
     'debug' => 0,
@@ -29,7 +29,7 @@ function deploy_extra_iex_install() {
   // Try to add endpoint to endpoints table.
   $transaction = db_transaction();
   try {
-    drupal_write_record(DEPLOY_ENDPOINTS_TABLE_NAME, $endpoint);
+    drupal_write_record('deploy_extra_iex_endpoint', $endpoint);
   }
   catch(Exception $e) {
     $transaction->rollback();

@@ -68,7 +68,7 @@ class DeployProcessorForm extends DeployProcessorMemory {
     $context = array('context' => DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT);
 
     // Get plugins.
-    $formats = deploy_extra_iex_get_export_format_plugins();
+    $formats = deploy_extra_iex_get_export_formats_plugins();
 
     // Initialize the options array.
     $options = array();

@@ -2,14 +2,11 @@
 
 /**
  * @file
- * This is the file description for Deploy Extra Import Export module.
+ * This is the file description for Deploy Extra IEX module.
  */
 
 // Translation context.
-define('DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT', 'deploy_extra_import_export');
-
-// Endpoints table of deploy module.
-define('DEPLOY_ENDPOINTS_TABLE_NAME', 'deploy_endpoints');
+define('DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT', 'deploy_extra_iex');
 
 /**
  * Implements hook_permission().
@@ -69,7 +66,7 @@ function deploy_extra_iex_form_ctools_export_ui_edit_item_wizard_form_alter(&$fo
   if (isset($form['aggregator_plugin'])) {
     // Add DeployProcessorForm to list of processors.
     $form['fieldset']['processor_plugin']['#options']['DeployProcessorForm'] = array(
-      'name' => t('Processor Form', array(), $context),
+      'name' => t('Form Processor', array(), $context),
       'description' => t('All entities are processed with the Batch API and output in form or file.'),
     );
 
@@ -88,6 +85,11 @@ function deploy_extra_endpoints_after_build($element, &$form_state) {
   if (isset($element['deploy_extra_iex_endpoint'])) {
     $element['deploy_extra_iex_endpoint']['#states'] = array(
       'checked' => array(
+        ':input[name="processor_plugin"]' => array(
+          'value' => 'DeployProcessorForm',
+        )
+      ),
+      'enabled' => array(
         ':input[name="processor_plugin"]' => array(
           'value' => 'DeployProcessorForm',
         )
@@ -134,9 +136,14 @@ function deploy_extra_iex_export_batch_finished_operation($success, $results, $o
     $export_format = $results['export_format'];
 
     // Load export formatter and encode the data of entities.
-    $formatter = deploy_extra_iex_get_export_format_plugins($export_format);
+    $formatter = deploy_extra_iex_get_export_formats_plugins($export_format);
     $class = new $formatter['handler']['class'];
-    $data  = $class->encodeData($results['entities']);
+    $data  = $class->encodeData(
+      array(
+        'lock_name' => $results['lock_name'],
+        'entities'  => $results['entities'],
+      )
+    );
 
     // Put encoded data in cache.
     cache_set('deploy_extra_iex_' . $uuid, $data, 'cache', CACHE_TEMPORARY);
@@ -247,7 +254,7 @@ function deploy_extra_iex_pass_deploy_info($uuid, $export_method, $destination, 
  */
 function deploy_extra_iex_ctools_plugin_type() {
   return array(
-    'export_format' => array(
+    'export_formats' => array(
       'cache' => TRUE,
       'use hooks' => TRUE,
       'classes' => array('handler'),
@@ -263,16 +270,16 @@ function deploy_extra_iex_ctools_plugin_type() {
  *
  * @return array
  */
-function deploy_extra_iex_get_export_format_plugins($id = NULL) {
+function deploy_extra_iex_get_export_formats_plugins($id = NULL) {
   ctools_include('plugins');
-  return ctools_get_plugins('deploy_extra_iex', 'export_format', $id);
+  return ctools_get_plugins('deploy_extra_iex', 'export_formats', $id);
 }
 
 /**
- * Implements hook_deploy_extra_iex_export_format().
+ * Implements hook_deploy_extra_iex_export_formats().
  */
-function deploy_extra_iex_deploy_extra_iex_export_format() {
-  $path = drupal_get_path('module', 'deploy_extra_iex') . '/plugins/formats';
+function deploy_extra_iex_deploy_extra_iex_export_formats() {
+  $path = drupal_get_path('module', 'deploy_extra_iex') . '/plugins/export_formats';
   return array(
     'DeployExtraJSON' => array(
       'name' => 'JSON',
@@ -338,14 +345,13 @@ function deploy_extra_iex_form_export($success, $results) {
  * @param $success
  * @param $results
  */
-function deploy_extra_file_export($success, $results) {
+function deploy_extra_iex_file_export($success, $results) {
   $uuid  = $results['uuid'];
   $cid   = 'deploy_extra_iex_' . $uuid;
   $cache = cache_get($cid);
-  cache_clear_all($uuid, 'cache');
 
-  $path = trim($results['destination']);
-  $dir  = 'public://' . $path . '/';
+  $destination = trim($results['destination']);
+  $dir  = 'public://' . $destination . '/';
 
   // Check if directory is exist.
   if (!is_dir($dir)) {
@@ -355,7 +361,10 @@ function deploy_extra_file_export($success, $results) {
   $filename = $results['plan_name'] . '_' . date("d-m-Y(H.i)") . '.txt';
   $file = fopen($dir . $filename, 'a+');
   fwrite($file, $cache->data);
-  $suffix = t('File name is %file', array('%file' => $filename));
+
+  // Use in translation context.
+  $context = array('context' => DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT);
+  $suffix = t('File name is !file', array('!file' => l($filename, 'ajax/deploy/download/' . $uuid)), $context);
   deploy_extra_iex_return_message($uuid, $success, $suffix);
 }
 
