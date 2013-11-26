@@ -82,10 +82,10 @@ function deploy_extra_import_check($entity_type, $uuid, $entity, $deployment_key
   $vuuid = deploy_extra_get_vuuid_from_entity($entity, $entity_type);
 
   // Perform general checks for entity.
-  $error = deploy_extra_import_check_common($entity_type, $uuid, $entity, $deployment_key);
+  $messages = deploy_extra_import_check_common($entity_type, $uuid, $entity, $deployment_key);
 
   // Not necessary to perform other checks.
-  if(!empty($error)) {
+  if(!empty($messages)) {
     // Write messages to log.
     deploy_extra_import_log($deployment_key, $uuid, $entity_type, $messages, $vuuid);
     return;
