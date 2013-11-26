@@ -130,16 +130,16 @@ function deploy_extra_import_check_common($entity_type, $uuid, $entity, $deploym
   // This situation isn't possible if you use the rest service,
   // but obviously possible for import from file/form.
   if ($entities[$entity_type]) {
-    $messages += array(
-      'message' => t('This %entity_type does not exist on the site.', array('%entity_type' => $entity_type), $context),
+    $messages[] = array(
+      'message' => t('This entity type - %entity_type does not exist on the site.', array('%entity_type' => $entity_type), $context),
       'type'    => $message_type,
     );
   }
 
-  // If this entity type does not support UUIDs.
-  if (empty($entities[$entity_type]['uuid'])) {
-    $messages += array(
-      'message' => t('This %entity_type does not support UUIDs.', array('%entity_type' => $entity_type), $context),
+  // If this entity type doesn't support UUIDs.
+  if (!empty($entities[$entity_type]['uuid'])) {
+    $messages[] = array(
+      'message' => t('This entity type - %entity_type does not support UUIDs.', array('%entity_type' => $entity_type), $context),
       'type'    => $message_type,
     );
   }
@@ -148,7 +148,7 @@ function deploy_extra_import_check_common($entity_type, $uuid, $entity, $deploym
   list(,, $bundle_name) = entity_extract_ids($entity_type, $entity);
   $entity_info = entity_get_info($entity_type);
   if(!in_array($bundle_name, $entity_info['bundles'])) {
-    $messages += array(
+    $messages[] = array(
       'message' => t('Bundle - %bundle does not exists.', array('%bundle' => $bundle_name), $context),
       'type'    => $message_type,
     );
@@ -200,7 +200,7 @@ function node_deploy_extra_check_structure($entity_type, $entity) {
 
     // No such language on the site.
     if (!isset($lang[$node_lang])) {
-      $messages += array(
+      $messages[] = array(
         'message' => t('No such language - %lang on the site.', array('%lang' => $node_lang), $context),
         'type' => $message_type,
       );
