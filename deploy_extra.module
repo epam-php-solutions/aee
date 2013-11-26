@@ -41,7 +41,7 @@ function deploy_extra_deploy_services() {
   return array(
     'DeployServiceRestJsonAdv' => array(
       'name' => 'REST JSON advanced',
-      'description' => 'Same as the REST JSON service + additional logging capabilities and test mode',
+      'description' => 'Same as the REST JSON service + additional logging capabilities + test mode',
       'handler' => array(
         'class' => 'DeployServiceRestJsonAdv',
         'file' => 'DeployServiceRestJsonAdv.inc',

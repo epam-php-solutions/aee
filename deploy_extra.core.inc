@@ -36,6 +36,16 @@ function deloy_extra_import_entity($entity_type, $uuid, $entity, $config) {
   deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config);
 }
 
+/**
+ * Check, save, enable entity.
+ * @TODO add right description.
+ *
+ * @param $entity_type
+ * @param $entity
+ * @param $uuid
+ * @param $config
+ * @return mixed|object
+ */
 function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) {
   try {
     $controller = entity_get_controller($entity_type);
@@ -69,7 +79,7 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
 
 /**
  * Helper function.
- * Fills the an array of settings.
+ * Import settings array preparations.
  *
  * @param $config
  */
@@ -81,7 +91,7 @@ function deploy_extra_import_settings_preparation(&$config) {
 }
 
 /**
- * Helper function.
+ * Helper debug function.
  * Save variables in to watchdog.
  *
  * @param $data
