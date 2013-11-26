@@ -158,7 +158,6 @@ function node_deploy_extra_check_structure($entity_type, $entity) {
  * @param string $message
  * The message for logging
  */
-
 function _deploy_extra_import_log($deployment_uuid, $entity_uuid, $entity_type, $status = 0, $data = array(), $entity_vuuid = NULL) {
 
   // @TODO need to add function to transform $data array to $message string
@@ -195,7 +194,6 @@ function _deploy_extra_import_log($deployment_uuid, $entity_uuid, $entity_type, 
 /**
  * @TODO add the proper description
  */
-
 function deploy_extra_import_log_status($deployment_uuid, $entity_uuid, $entity_type, $status, $data = array(), $entity_vuuid = NULL) {
   _deploy_extra_import_log($deployment_uuid, $entity_uuid, $entity_type, $status, $data, $entity_vuuid);
 }
@@ -203,7 +201,6 @@ function deploy_extra_import_log_status($deployment_uuid, $entity_uuid, $entity_
 /**
  * @TODO add the proper description
  */
-
 function deploy_extra_import_log($deployment_uuid, $entity_uuid, $entity_type, $data = array(), $entity_vuuid = NULL) {
   $status = DEL_IMPORT_STATUS_PROCESSED;
   _deploy_extra_import_log($deployment_uuid, $entity_uuid, $entity_type, $status, $data, $entity_vuuid);
