@@ -5,17 +5,91 @@
  * Deploy Extra log module.
  */
 
+/**
+ * helper function for logging of import entities process
+ *
+ * @param string $deployment_uuid
+ * The UUID of deployment
+ *
+ * @param string $entity_uuid
+ * The UUID of import entity
+ *
+ * @param string $entity_type
+ * The type of import entity
+ *
+ * @param integer $status
+ * The status of import entity, sed define above
+ *
+ * @param string $entity_vuuid
+ * The UUID of entity revision if it exists
+ *
+ * @param string $message
+ * The message for logging
+ */
+function _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status = 0, $data = array(), $entity_vuuid = NULL) {
+
+  // @TODO need to add function to transform $data array to $message string
+  $message = NULL;
+  if(isset($data['message'])) {
+    $message = $data['message'];
+  }
+
+  $keys = array(
+    'deployment_uuid' => $deployment_key,
+    'entity_uuid' => $uuid,
+  );
+  $fields = array(
+    'deployment_uuid' => $deployment_key,
+    'entity_uuid' => $uuid,
+    'entity_type' => $entity_type,
+    'status' => $status,
+    'timestamp' => time(),
+    'data' => !empty($data) ? serialize($data) : NULL,
+    'message' => $message,
+  );
+
+  if ($entity_vuuid) {
+    $keys['entity_vuuid'] = $entity_vuuid;
+    $fields['entity_vuuid'] = $entity_vuuid;
+  }
+
+  db_merge('deploy_extra_import_log')
+    ->key($keys)
+    ->fields($fields)
+    ->execute();
+}
+
+/**
+ * @TODO add the proper description
+ */
+function deploy_extra_import_log_status($deployment_key, $uuid, $entity_type, $status, $messages = array(), $entity_vuuid = NULL) {
+  _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status, $messages, $entity_vuuid);
+}
+
+/**
+ * @TODO add the proper description
+ */
+function deploy_extra_import_log($deployment_key, $uuid, $entity_type, $messages = array(), $entity_vuuid = NULL) {
+  $status = DEL_IMPORT_STATUS_PROCESSED;
+  _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status, $messages, $entity_vuuid);
+}
+
 /*
  * Structure errors Logging system.
  */
 function deploy_extra_import_check($entity_type, $uuid, $entity, $deployment_key) {
   $messages = array();
+  $vuuid = deploy_extra_get_vuuid_from_entity($entity, $entity_type);
 
   // Perform general checks for entity.
   $error = deploy_extra_import_check_common($entity_type, $uuid, $entity, $deployment_key);
 
   // Not necessary to perform other checks.
-  if($error) return;
+  if(!empty($error)) {
+    // Write messages to log.
+    deploy_extra_import_log($deployment_key, $uuid, $entity_type, $messages, $vuuid);
+    return;
+  }
 
   // @TODO How to improve this?
   // Make an entity local.
@@ -35,7 +109,7 @@ function deploy_extra_import_check($entity_type, $uuid, $entity, $deployment_key
   drupal_alter('deploy_extra_check_structure', $messages, $entity_type, $entity);
 
   // Write messages to log.
-  deploy_extra_import_log($deployment_key, $uuid, $messages);
+  deploy_extra_import_log($deployment_key, $uuid, $entity_type, $messages, $vuuid);
 }
 
 /*
@@ -78,10 +152,7 @@ function deploy_extra_import_check_common($entity_type, $uuid, $entity, $deploym
     );
   }
 
-  // Write messages to log.
-  deploy_extra_import_log($deployment_key, $uuid, $messages);
-
-  return !empty($messages);
+  return $messages;
 }
 
 /**
@@ -135,73 +206,4 @@ function node_deploy_extra_check_structure($entity_type, $entity) {
 
     return $messages;
   }
-}
-
-/**
- * helper function for logging of import entities process
- *
- * @param string $deployment_uuid
- * The UUID of deployment
- *
- * @param string $entity_uuid
- * The UUID of import entity
- *
- * @param string $entity_type
- * The type of import entity
- *
- * @param integer $status
- * The status of import entity, sed define above
- *
- * @param string $entity_vuuid
- * The UUID of entity revision if it exists
- *
- * @param string $message
- * The message for logging
- */
-function _deploy_extra_import_log($deployment_uuid, $entity_uuid, $entity_type, $status = 0, $data = array(), $entity_vuuid = NULL) {
-
-  // @TODO need to add function to transform $data array to $message string
-  $message = NULL;
-  if(isset($data['message'])) {
-    $message = $data['message'];
-  }
-
-  $keys = array(
-    'deployment_uuid' => $deployment_uuid,
-    'entity_uuid' => $entity_uuid,
-  );
-  $fields = array(
-    'deployment_uuid' => $deployment_uuid,
-    'entity_uuid' => $entity_uuid,
-    'entity_type' => $entity_type,
-    'status' => $status,
-    'timestamp' => time(),
-    'data' => !empty($data) ? serialize($data) : NULL,
-    'message' => $message,
-  );
-
-  if ($entity_vuuid) {
-    $keys['entity_vuuid'] = $entity_vuuid;
-    $fields['entity_vuuid'] = $entity_vuuid;
-  }
-
-  db_merge('deploy_extra_import_log')
-    ->key($keys)
-    ->fields($fields)
-    ->execute();
-}
-
-/**
- * @TODO add the proper description
- */
-function deploy_extra_import_log_status($deployment_uuid, $entity_uuid, $entity_type, $status, $data = array(), $entity_vuuid = NULL) {
-  _deploy_extra_import_log($deployment_uuid, $entity_uuid, $entity_type, $status, $data, $entity_vuuid);
-}
-
-/**
- * @TODO add the proper description
- */
-function deploy_extra_import_log($deployment_uuid, $entity_uuid, $entity_type, $data = array(), $entity_vuuid = NULL) {
-  $status = DEL_IMPORT_STATUS_PROCESSED;
-  _deploy_extra_import_log($deployment_uuid, $entity_uuid, $entity_type, $status, $data, $entity_vuuid);
 }

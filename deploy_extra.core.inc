@@ -94,3 +94,23 @@ function deploy_extra_debug($data, $func = '') {
 
   watchdog('deploy_extra:debug', $prefix . 'Debug vars: <pre>@info</pre>', array('@info' => print_r($data, 1)), WATCHDOG_DEBUG);
 }
+
+/*
+ * Helper function.
+ * Return vuuid from entity.
+ */
+function deploy_extra_get_vuuid_from_entity($entity, $entity_type) {
+  $info = entity_get_info($entity_type);
+
+  if (!empty($info['entity keys']['revision uuid'])) {
+    // Get the keys for revision UUID.
+    $vuuid_key = $info['entity keys']['revision uuid'];
+
+    // Fetch the local revision ID by its UUID.
+    if (isset($entity->{$vuuid_key})) {
+      return $entity->{$vuuid_key};
+    }
+  }
+
+  return FALSE;
+}
