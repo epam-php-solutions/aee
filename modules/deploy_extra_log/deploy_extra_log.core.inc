@@ -29,10 +29,7 @@
 function _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status = 0, $data = array(), $entity_vuuid = NULL) {
 
   // @TODO need to add function to transform $data array to $message string
-  $message = NULL;
-  if(isset($data['message'])) {
-    $message = $data['message'];
-  }
+  $message = $data;
 
   $keys = array(
     'deployment_uuid' => $deployment_key,
