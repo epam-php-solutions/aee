@@ -47,7 +47,7 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
     }
 
     // Perform logging process and return.
-    if ($config['adv_log'] && $config['deployment_key'] && function_exists('deploy_extra_import_check')) {
+    if ($config['adv_log'] && $config['deployment_key'] && module_exists('deploy_extra_log')) {
       // Create a clone of the entity object to check,
       // that forbid directly changing entity object.
       $clone = clone $entity;
