@@ -32,7 +32,7 @@ function deploy_extra_iex_entity_import_form() {
   }
 
   // If deploy_extra_log is enable. show the additional settings.
-  if (module_enable('deploy_extra_log')) {
+  if (module_exists('deploy_extra_log')) {
     // Config of import.
     $form['import']['config'] = array(
       '#type'  => 'checkboxes',
