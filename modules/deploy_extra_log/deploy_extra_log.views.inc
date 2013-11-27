@@ -125,11 +125,11 @@ function deploy_extra_log_views_data() {
     'title' => t('Import status'),
     'help' => t('A status code for the import entity.'),
     'field' => array(
-      'handler' => 'views_handler_field',
+      'handler' => 'deploy_extra_log_handler_status_field',
       'click sortable' => TRUE,
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_numeric',
+      'handler' => 'views_handler_filter_string',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -175,8 +175,15 @@ function deploy_extra_log_views_default_views() {
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['exposed_form']['type'] = 'basic';
   $handler->display->display_options['pager']['type'] = 'full';
-  $handler->display->display_options['pager']['options']['items_per_page'] = '10';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '50';
   $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['grouping'] = array(
+    0 => array(
+      'field' => 'deployment_uuid',
+      'rendered' => 1,
+      'rendered_strip' => 0,
+    ),
+  );
   $handler->display->display_options['style_options']['columns'] = array(
     'lid' => 'lid',
     'deployment_uuid' => 'deployment_uuid',
@@ -279,6 +286,11 @@ function deploy_extra_log_views_default_views() {
   $handler->display->display_options['fields']['message']['id'] = 'message';
   $handler->display->display_options['fields']['message']['table'] = 'deploy_extra_import_log';
   $handler->display->display_options['fields']['message']['field'] = 'message';
+  /* Sort criterion: Deploy Extra: Log ID */
+  $handler->display->display_options['sorts']['lid']['id'] = 'lid';
+  $handler->display->display_options['sorts']['lid']['table'] = 'deploy_extra_import_log';
+  $handler->display->display_options['sorts']['lid']['field'] = 'lid';
+  $handler->display->display_options['sorts']['lid']['order'] = 'DESC';
   /* Filter criterion: Deploy Extra: Deployment UUID */
   $handler->display->display_options['filters']['deployment_uuid']['id'] = 'deployment_uuid';
   $handler->display->display_options['filters']['deployment_uuid']['table'] = 'deploy_extra_import_log';
@@ -381,7 +393,7 @@ function deploy_extra_log_views_default_views() {
   $handler->display->display_options['path'] = 'admin/structure/deploy/deploy-extra-log';
   $handler->display->display_options['menu']['type'] = 'tab';
   $handler->display->display_options['menu']['title'] = 'Deploy Extra Log';
-  $handler->display->display_options['menu']['weight'] = '0';
+  $handler->display->display_options['menu']['weight'] = '100';
   $handler->display->display_options['menu']['name'] = 'management';
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['menu']['context_only_inline'] = 0;

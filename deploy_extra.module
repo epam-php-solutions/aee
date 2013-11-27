@@ -6,16 +6,6 @@
  */
 
 /**
- * Deployment statuses. DEL - Deploy Extra Log
- */
-define('DEL_IMPORT_STATUS_PROCESSED', 0);
-define('DEL_IMPORT_STATUS_SAVED', 1);
-define('DEL_IMPORT_STATUS_UPDATED', 2);
-define('DEL_IMPORT_STATUS_SKIPPED', 3);
-define('DEL_IMPORT_STATUS_TEST_MODE', 4);
-define('DEL_IMPORT_STATUS_FAILED', 5);
-
-/**
  * Include the services hook implementations.
  */
 module_load_include('inc', 'deploy_extra', 'deploy_extra.core');
@@ -51,7 +41,7 @@ function deploy_extra_deploy_services() {
   return array(
     'DeployServiceRestJsonAdv' => array(
       'name' => 'REST JSON advanced',
-      'description' => 'Same as the REST JSON service + additional logging capabilities and test mode',
+      'description' => 'Same as the REST JSON service + additional logging capabilities + test mode',
       'handler' => array(
         'class' => 'DeployServiceRestJsonAdv',
         'file' => 'DeployServiceRestJsonAdv.inc',
@@ -59,76 +49,4 @@ function deploy_extra_deploy_services() {
       ),
     ),
   );
-}
-
-/**
- * helper function for logging of import entities process
- *
- * @param string $deployment_uuid
- * The UUID of deployment
- *
- * @param string $entity_uuid
- * The UUID of import entity
- *
- * @param string $entity_type
- * The type of import entity
- *
- * @param integer $status
- * The status of import entity, sed define above
- *
- * @param string $entity_vuuid
- * The UUID of entity revision if it exists
- *
- * @param string $message
- * The message for logging
- */
-
-function _deploy_extra_import_log($deployment_uuid, $entity_uuid, $entity_type, $status = 0, $data = array(), $entity_vuuid = NULL) {
-
-  // @TODO need to add function to transform $data array to $message string
-  $message = NULL;
-  if(isset($data['message'])) {
-    $message = $data['message'];
-  }
-
-  $keys = array(
-    'deployment_uuid' => $deployment_uuid,
-    'entity_uuid' => $entity_uuid,
-  );
-  $fields = array(
-    'deployment_uuid' => $deployment_uuid,
-    'entity_uuid' => $entity_uuid,
-    'entity_type' => $entity_type,
-    'status' => $status,
-    'timestamp' => time(),
-    'data' => !empty($data) ? serialize($data) : NULL,
-    'message' => $message,
-  );
-
-  if ($entity_vuuid) {
-    $keys['entity_vuuid'] = $entity_vuuid;
-    $fields['entity_vuuid'] = $entity_vuuid;
-  }
-
-  db_merge('deploy_extra_import_log')
-    ->key($keys)
-    ->fields($fields)
-    ->execute();
-}
-
-/**
- * @TODO add the proper description
- */
-
-function deploy_extra_import_log_status($deployment_uuid, $entity_uuid, $entity_type, $status, $data = array(), $entity_vuuid = NULL) {
-  _deploy_extra_import_log($deployment_uuid, $entity_uuid, $entity_type, $status, $data, $entity_vuuid);
-}
-
-/**
- * @TODO add the proper description
- */
-
-function deploy_extra_import_log($deployment_uuid, $entity_uuid, $entity_type, $data = array(), $entity_vuuid = NULL) {
-  $status = DEL_IMPORT_STATUS_PROCESSED;
-  _deploy_extra_import_log($deployment_uuid, $entity_uuid, $entity_type, $status, $data, $entity_vuuid);
 }

@@ -6,6 +6,17 @@
  * Add ability to perform deploy process in test mode.
  */
 
+/**
+ * Deployment statuses.
+ */
+define('DEL_IMPORT_STATUS_PROCESSED', 0);
+define('DEL_IMPORT_STATUS_SAVED', 1);
+define('DEL_IMPORT_STATUS_UPDATED', 2);
+define('DEL_IMPORT_STATUS_SKIPPED', 3);
+define('DEL_IMPORT_STATUS_TEST_MODE', 4);
+define('DEL_IMPORT_STATUS_FAILED', 5);
+
+// Translation context.
 define('DEPLOY_EXTRA_LOG_TRANSLATE_CONTEXT', 'deploy_extra_log');
 
 /**
@@ -44,7 +55,7 @@ function deploy_extra_log_DeployServiceRestJsonAdv_form_alter(&$form, &$form_sta
   $form['skip'] = array(
     '#type' => 'checkbox',
     '#title' => t('Skip update'),
-    '#description' => t('Check this to enable skip mode. If the material already exists update operation  will be skipped.'),
+    '#description' => t('Check this to enable the skip mode. If the entity already exists update operation will be skipped.'),
     '#default_value' => $config['skip'],
     '#weight' => 8,
   );
@@ -63,6 +74,8 @@ function deploy_extra_log_DeployServiceRestJsonAdv_config_alter(&$config) {
 
 /**
  * Implements hook_DeployServiceRestJsonAdv_entity_alter().
+ * Filling entity __metadata property before export/deploy
+ * process has been started.
  */
 function deploy_extra_log_DeployServiceRestJsonAdv_entity_alter(&$entity, $config) {
 
@@ -94,7 +107,7 @@ function deploy_extra_log_module_implements_alter(&$implementations, $hook) {
 }
 
 /*
- * Help function.
+ * Helper function.
  * Returns settings to be stored in the entity metadata.
  */
 function deploy_extra_log_to_metadata() {

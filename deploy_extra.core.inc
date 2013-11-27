@@ -36,6 +36,16 @@ function deloy_extra_import_entity($entity_type, $uuid, $entity, $config) {
   deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config);
 }
 
+/**
+ * Check, save, enable entity.
+ * @TODO add right description.
+ *
+ * @param $entity_type
+ * @param $entity
+ * @param $uuid
+ * @param $config
+ * @return mixed|object
+ */
 function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) {
   try {
     $controller = entity_get_controller($entity_type);
@@ -47,7 +57,7 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
     }
 
     // Perform logging process and return.
-    if ($config['adv_log'] && $config['deployment_key'] && function_exists('deploy_extra_import_check')) {
+    if ($config['adv_log'] && $config['deployment_key'] && module_exists('deploy_extra_log')) {
       // Create a clone of the entity object to check,
       // that forbid directly changing entity object.
       $clone = clone $entity;
@@ -69,7 +79,7 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
 
 /**
  * Helper function.
- * Fills the an array of settings.
+ * Import settings array preparations.
  *
  * @param $config
  */
@@ -81,7 +91,7 @@ function deploy_extra_import_settings_preparation(&$config) {
 }
 
 /**
- * Helper function.
+ * Helper debug function.
  * Save variables in to watchdog.
  *
  * @param $data
@@ -93,4 +103,24 @@ function deploy_extra_debug($data, $func = '') {
   }
 
   watchdog('deploy_extra:debug', $prefix . 'Debug vars: <pre>@info</pre>', array('@info' => print_r($data, 1)), WATCHDOG_DEBUG);
+}
+
+/*
+ * Helper function.
+ * Return vuuid from entity.
+ */
+function deploy_extra_get_vuuid_from_entity($entity, $entity_type) {
+  $info = entity_get_info($entity_type);
+
+  if (!empty($info['entity keys']['revision uuid'])) {
+    // Get the keys for revision UUID.
+    $vuuid_key = $info['entity keys']['revision uuid'];
+
+    // Fetch the local revision ID by its UUID.
+    if (isset($entity->{$vuuid_key})) {
+      return $entity->{$vuuid_key};
+    }
+  }
+
+  return FALSE;
 }
