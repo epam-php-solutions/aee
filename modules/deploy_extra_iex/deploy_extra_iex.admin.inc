@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Includes the admin callbacks and functions for Deploy Extra Import Export module.
+ * Includes the admin callbacks and functions for Deploy Extra IEX module.
  */
 
 /**

@@ -8,6 +8,7 @@
 // Translation context.
 define('DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT', 'deploy_extra_iex');
 
+// Include needed files.
 module_load_include('inc', 'deploy_extra_iex', 'deploy_extra_iex.core');
 module_load_include('inc', 'deploy_extra_iex', 'deploy_extra_iex.batch');
 
