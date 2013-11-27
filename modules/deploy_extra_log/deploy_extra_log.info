@@ -3,5 +3,7 @@ description = Advanced Logging System for Deploy module
 package = Deployment
 core = 7.x
 
+files[] = deploy_extra_log_views_field_handlers.inc
+
 dependencies[] = deploy_extra
 dependencies[] = uuid_services
