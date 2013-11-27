@@ -125,11 +125,11 @@ function deploy_extra_log_views_data() {
     'title' => t('Import status'),
     'help' => t('A status code for the import entity.'),
     'field' => array(
-      'handler' => 'views_handler_field',
+      'handler' => 'deploy_extra_log_handler_status_field',
       'click sortable' => TRUE,
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_numeric',
+      'handler' => 'views_handler_filter_string',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',

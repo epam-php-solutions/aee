@@ -8,7 +8,7 @@ class DeployExtraYaml implements DeployExtraFormat {
 
   public function encodeData($data) {
     $this->loadSpyc();
-    foreach($data as &$entity) {
+    foreach($data['entities'] as &$entity) {
       $entity = (array)$entity;
     }
     unset($entity);
