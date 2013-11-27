@@ -28,8 +28,9 @@
  */
 function _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status = 0, $data = array(), $entity_vuuid = NULL) {
 
-  // @TODO need to add function to transform $data array to $message string
   $message = $data;
+  // Convert an array of log messages into a plain text.
+  deploy_extra_log_message_to_text($message);
 
   $keys = array(
     'deployment_uuid' => $deployment_key,
@@ -75,7 +76,6 @@ function deploy_extra_import_log($deployment_key, $uuid, $entity_type, $messages
  * Structure errors Logging system.
  */
 function deploy_extra_import_check($entity_type, $uuid, $entity, $deployment_key) {
-  $messages = array();
   $vuuid = deploy_extra_get_vuuid_from_entity($entity, $entity_type);
 
   // Perform general checks for entity.
@@ -205,4 +205,16 @@ function node_deploy_extra_check_structure($entity_type, $entity) {
 
     return $messages;
   }
+}
+
+/*
+ * Helper function.
+ * Converts an array of log messages into a plain text.
+ */
+function deploy_extra_log_message_to_text(&$message) {
+  $text = '';
+  foreach ($message as $id => $data) {
+    $text .= $data['type'] . '-' . $data['message'] . '<br>';
+  }
+  $message = $text;
 }
