@@ -11,6 +11,11 @@
 module_load_include('inc', 'deploy_extra', 'deploy_extra.core');
 
 /**
+ * Include the services hook implementations.
+ */
+module_load_include('inc', 'deploy_extra', 'deploy_extra.services');
+
+/**
  * Implements hook_form_alter().
  */
 function deploy_extra_form_alter(&$form, &$form_state, $form_id) {

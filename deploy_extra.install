@@ -1,0 +1,10 @@
+<?php
+
+/**
+ * Implementation of hook_enable().
+ */
+function deploy_extra_enable() {
+  $hook = 'services_resources_alter';
+  // Reset 'services_resources_alter' cache.
+  module_implements($hook, FALSE, TRUE);
+}

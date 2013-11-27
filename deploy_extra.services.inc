@@ -4,7 +4,7 @@
  * Implements hook_services_resources_alter().
  *
  */
-function deploy_extra_log_services_resources_alter(&$resources, &$endpoint) {
+function deploy_extra_services_resources_alter(&$resources, &$endpoint) {
   foreach (entity_get_info() as $entity_type => $entity_info) {
     if (!empty($entity_info['uuid']) && isset($resources[$entity_type])) {
 
@@ -26,7 +26,7 @@ function _deploy_extra_services_update($entity_type, $uuid, $entity) {
   $config = array();
 
   // To config from entity metadata.
-  $to_config = deploy_extra_log_to_metadata();
+  $to_config = deploy_extra_to_metadata();
 
   // Old services update/save callback.
   $old_callback = _deploy_extra_services_old_update_callback();

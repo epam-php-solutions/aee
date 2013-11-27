@@ -20,11 +20,6 @@ define('DEL_IMPORT_STATUS_FAILED', 5);
 define('DEPLOY_EXTRA_LOG_TRANSLATE_CONTEXT', 'deploy_extra_log');
 
 /**
- * Include the services hook implementations.
- */
-module_load_include('inc', 'deploy_extra_log', 'deploy_extra_log.services');
-
-/**
  * Include checking structure hook implementations.
  */
 module_load_include('inc', 'deploy_extra_log', 'deploy_extra_log.core');
@@ -81,7 +76,7 @@ function deploy_extra_log_DeployServiceRestJsonAdv_entity_alter(&$entity, $confi
 
   if (isset($entity->__metadata)) {
     $metadata = &$entity->__metadata;
-    $to_metadata = deploy_extra_log_to_metadata();
+    $to_metadata = deploy_extra_to_metadata();
     foreach ($to_metadata as $property) {
       if(isset($config[$property])) {
         $metadata['deploy_extra'][$property] = $config[$property];
@@ -104,19 +99,6 @@ function deploy_extra_log_module_implements_alter(&$implementations, $hook) {
     unset($implementations['deploy_extra_log']);
     $implementations['deploy_extra_log'] = $group;
   }
-}
-
-/*
- * Helper function.
- * Returns settings to be stored in the entity metadata.
- */
-function deploy_extra_log_to_metadata() {
-  return array(
-    'adv_log',
-    'tmode',
-    'deployment_key',
-    'skip',
-  );
 }
 
 /**
