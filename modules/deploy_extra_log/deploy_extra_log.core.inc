@@ -68,7 +68,7 @@ function deploy_extra_import_log_status($deployment_key, $uuid, $entity_type, $s
  * @TODO add the proper description
  */
 function deploy_extra_import_log($deployment_key, $uuid, $entity_type, $messages = array(), $entity_vuuid = NULL) {
-  $status = DEL_IMPORT_STATUS_PROCESSED;
+  $status = DEPLOY_EXTRA_IMPORT_STATUS_PROCESSED;
   _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status, $messages, $entity_vuuid);
 }
 
@@ -228,12 +228,12 @@ function deploy_extra_log_message_to_text(&$message) {
 function _deploy_extra_log_status_to_string ($status) {
 
   $statuses = array(
-    DEL_IMPORT_STATUS_PROCESSED => t('Processed'),
-    DEL_IMPORT_STATUS_SAVED => t('Saved'),
-    DEL_IMPORT_STATUS_UPDATED => t('Updated'),
-    DEL_IMPORT_STATUS_SKIPPED => t('Skipped'),
-    DEL_IMPORT_STATUS_TEST_MODE => t('Test Mode'),
-    DEL_IMPORT_STATUS_FAILED => t('Failed'),
+    DEPLOY_EXTRA_IMPORT_STATUS_PROCESSED => t('Processed'),
+    DEPLOY_EXTRA_IMPORT_STATUS_SAVED     => t('Saved'),
+    DEPLOY_EXTRA_IMPORT_STATUS_UPDATED   => t('Updated'),
+    DEPLOY_EXTRA_IMPORT_STATUS_SKIPPED   => t('Skipped'),
+    DEPLOY_EXTRA_IMPORT_STATUS_TEST_MODE => t('Test Mode'),
+    DEPLOY_EXTRA_IMPORT_STATUS_FAILED    => t('Failed'),
   );
 
   if(array_key_exists($status, $statuses)) {

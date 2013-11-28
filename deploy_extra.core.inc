@@ -22,14 +22,14 @@ function deloy_extra_import_entity($entity_type, $uuid, $entity, $config) {
   // Add ability to change entity before executing save/update operation.
   drupal_alter('deploy_extra_import_entity', $entity_type, $uuid, $entity, $config['deployment_key']);
 
-  // If enable skip updates mode.
-  if ($config['skip']) {
-    $id = entity_get_id_by_uuid($entity_type, array($uuid));
+  // Is the entity exists?
+  $id = entity_get_id_by_uuid($entity_type, array($uuid));
+  $config['entity_exists'] = !empty($id[$uuid]);
 
+  // If enable skip updates mode.
+  if ($config['skip'] && $config['entity_exists']) {
     // Entity already exists. Enable tmode for this entity.
-    if (!empty($id[$uuid])) {
-      $config['tmode'] = TRUE;
-    }
+    $config['tmode'] = TRUE;
   }
 
   // Perform update/create process.
@@ -56,7 +56,7 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
       $entity = (object) $entity;
     }
 
-    // Perform logging process and return.
+    // Perform checking process.
     if ($config['adv_log'] && $config['deployment_key'] && module_exists('deploy_extra_log')) {
       // Create a clone of the entity object to check,
       // that forbid directly changing entity object.
@@ -64,15 +64,38 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
       deploy_extra_import_check($entity_type, $uuid, $clone, $config['deployment_key']);
     }
 
-    // Perform save/update operation.
-    if(!$config['tmode']) {
+    // Test mode.
+    if (!empty($config['tmode'])) {
+      $status = ($config['skip'] && $config['entity_exists']) ? DEPLOY_EXTRA_IMPORT_STATUS_SKIPPED : DEPLOY_EXTRA_IMPORT_STATUS_TEST_MODE;
+    }
+    else {
+      // Perform save/update operation.
       entity_uuid_save($entity_type, $entity);
+      $status = ($config['entity_exists']) ? DEPLOY_EXTRA_IMPORT_STATUS_UPDATED : DEPLOY_EXTRA_IMPORT_STATUS_SAVED;
     }
 
-  }
-  catch (Exception $exception) {
+    // Save the status of the operation into the log.
+    if (module_exists('deploy_extra_log')) {
+      _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, $status);
+    }
+
+  } catch (Exception $exception) {
     watchdog_exception('deploy_extra', $exception);
+
+    // Save the status of the operation into the log.
+    if (module_exists('deploy_extra_log')) {
+      _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, DEPLOY_EXTRA_IMPORT_STATUS_FAILED);
+    }
+
     return services_error($exception, 406, $entity);
+  }
+}
+
+function _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, $status) {
+  if (!empty($config['deployment_key'])) {
+    // Checking revision.
+    $vuuid = deploy_extra_get_vuuid_from_entity($entity, $entity_type);
+    deploy_extra_import_log_status($config['deployment_key'], $uuid, $entity_type, $status, array(), $vuuid);
   }
 }
 
@@ -127,6 +150,7 @@ function deploy_extra_get_vuuid_from_entity($entity, $entity_type) {
 /*
  * Helper function.
  * Returns settings to be stored in the entity metadata.
+ * @TODO duplication!
  */
 function deploy_extra_to_metadata() {
   return array(
