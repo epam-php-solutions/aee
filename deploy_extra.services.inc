@@ -44,6 +44,7 @@ function _deploy_extra_services_update($entity_type, $uuid, $entity) {
 
     // Perform update/save operations.
     deloy_extra_import_entity($entity_type, $uuid, $entity, $config);
+    return $entity;
   }
 
   // Use native function for update/save operations.

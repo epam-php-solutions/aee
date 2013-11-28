@@ -69,7 +69,6 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
       entity_uuid_save($entity_type, $entity);
     }
 
-    return $entity;
   }
   catch (Exception $exception) {
     watchdog_exception('deploy_extra', $exception);
