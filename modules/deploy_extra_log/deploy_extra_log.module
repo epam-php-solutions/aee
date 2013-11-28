@@ -105,5 +105,8 @@ function deploy_extra_log_module_implements_alter(&$implementations, $hook) {
  * Implements hook_views_api().
  */
 function deploy_extra_log_views_api() {
-  return array('api' => 3);
+  return array(
+    'api' => '3.0-alpha1',
+    'path' => drupal_get_path('module', 'deploy_extra_log') . '/views',
+  );
 }

@@ -146,6 +146,14 @@ function deploy_extra_log_views_data() {
     ),
   );
 
+  $data['deploy_extra_import_log']['link'] = array(
+    'field' => array(
+      'title' => t('Link'),
+      'help' => t('Provide a simple link to the entity.'),
+      'handler' => 'deploy_extra_log_handler_field_entity_link',
+    ),
+  );
+
   return $data;
 }
 
