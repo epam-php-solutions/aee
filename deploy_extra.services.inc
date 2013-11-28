@@ -19,21 +19,6 @@ function deploy_extra_services_resources_alter(&$resources, &$endpoint) {
 }
 
 /**
- * Implements hook_module_implements_alter().
- */
-function deploy_extra_module_implements_alter(&$implementations, $hook) {
-  if ($hook == 'services_resources_alter') {
-    // Move deploy_extra_log_module_implements_alter() to the end of the list.
-    // module_implements() iterates through $implementations with a foreach
-    // loop which PHP iterates  in the order that the items were added,
-    // so to move an item to the end of the array, we remove it and then add it.
-    $group = $implementations['deploy_extra'];
-    unset($implementations['deploy_extra']);
-    $implementations['deploy_extra'] = $group;
-  }
-}
-
-/**
  * Callback for the 'update' method.
  *
  */
