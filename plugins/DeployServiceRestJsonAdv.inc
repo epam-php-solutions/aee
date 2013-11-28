@@ -13,12 +13,11 @@ class DeployServiceRestJsonAdv extends DeployServiceRest {
    *   An associative array of configuration settings for the service plugin.
    */
   public function __construct(Array $config = array()) {
+    // Add custom options to default config.
+    $default_config = $this->defaultConfig();
+    $this->config += $default_config;
+
     parent::__construct($config);
-
-    // Get default config.
-    $config = $this->defaultConfig();
-
-    $this->config = array_merge($this->config, $config);
   }
 
   public function deploy(Traversable $iterator) {
@@ -31,7 +30,6 @@ class DeployServiceRestJsonAdv extends DeployServiceRest {
       // Let other modules have their say.
       drupal_alter(__CLASS__ . '_entity', $entity, $this->config);
 
-
       $json_data = drupal_json_encode($entity);
       $this->config['headers']['Content-Type'] = 'application/json';
 
@@ -41,13 +39,6 @@ class DeployServiceRestJsonAdv extends DeployServiceRest {
         $url = $this->config['url'] . '/' . $entity->__metadata['uri'];
       }
       $this->httpRequest($url, 'PUT', $json_data);
-    }
-  }
-
-  public function publish(Traversable $iterator) {
-    foreach ($iterator as $entity) {
-      $this->config['headers']['Content-Type'] = 'application/json';
-      // TODO: Try to get the last deploy structure log!
     }
   }
 
@@ -82,11 +73,12 @@ class DeployServiceRestJsonAdv extends DeployServiceRest {
   public function fillEntityMetadata ($entity) {
     if (isset($entity->__metadata)) {
       $metadata = &$entity->__metadata;
+      $config = $this->config;
 
       // Add in the Metadata only those properties
       // that are defined in the defaultConfig() method.
       $to_metadata = $this->defaultConfig();
-      foreach ($to_metadata as $property) {
+      foreach ($to_metadata as $property => $value) {
         if(isset($config[$property])) {
           $metadata['deploy_extra'][$property] = $config[$property];
         }
