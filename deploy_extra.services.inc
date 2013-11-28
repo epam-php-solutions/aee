@@ -23,24 +23,13 @@ function deploy_extra_services_resources_alter(&$resources, &$endpoint) {
  *
  */
 function _deploy_extra_services_update($entity_type, $uuid, $entity) {
-  $config = array();
-
-  // To config from entity metadata.
-  $to_config = deploy_extra_to_metadata();
 
   // Old services update/save callback.
   $old_callback = _deploy_extra_services_old_update_callback();
 
   // Extract metadata from entity object.
   if (isset($entity['__metadata']['deploy_extra'])) {
-    $metadata = $entity['__metadata']['deploy_extra'];
-
-    // Filling config array.
-    foreach ($to_config as $property) {
-      if (isset($metadata[$property])) {
-        $config[$property] = $metadata[$property];
-      }
-    }
+    $config = $entity['__metadata']['deploy_extra'];
 
     // Perform update/save operations.
     deloy_extra_import_entity($entity_type, $uuid, $entity, $config);

@@ -146,17 +146,3 @@ function deploy_extra_get_vuuid_from_entity($entity, $entity_type) {
 
   return FALSE;
 }
-
-/*
- * Helper function.
- * Returns settings to be stored in the entity metadata.
- * @TODO duplication!
- */
-function deploy_extra_to_metadata() {
-  return array(
-    'adv_log',
-    'tmode',
-    'deployment_key',
-    'skip',
-  );
-}
