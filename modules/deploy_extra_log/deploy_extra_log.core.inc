@@ -141,26 +141,31 @@ function deploy_extra_import_check_common($entity_type, $uuid, $entity, $deploym
   // but obviously possible for import from file/form.
   if (empty($entities[$entity_type])) {
     $messages[] = array(
-      'message' => t('This entity type - %entity_type does not exist on the site.', array('%entity_type' => $entity_type), $context),
-      'type'    => $message_type,
+      'message' => t('This entity type - %entity_type does not exist on the site.',
+        array('%entity_type' => $entity_type), $context),
+      'type' => $message_type,
     );
   }
 
   // If this entity type doesn't support UUIDs.
   if (empty($entities[$entity_type]['uuid'])) {
     $messages[] = array(
-      'message' => t('This entity type - %entity_type does not support UUIDs.', array('%entity_type' => $entity_type), $context),
-      'type'    => $message_type,
+      'message' => t('This entity type - %entity_type does not support UUIDs.',
+        array('%entity_type' => $entity_type), $context),
+      'type' => $message_type,
     );
   }
 
   // Check for the existence of an entity bundle.
-  list(,, $bundle_name) = entity_extract_ids($entity_type, $entity);
+  list(, , $bundle_name) = entity_extract_ids($entity_type, $entity);
   $entity_info = entity_get_info($entity_type);
-  if(!in_array($bundle_name, $entity_info['bundles'])) {
+  $bundles = $entity_info['bundles'];
+
+  if (!isset($bundles[$bundle_name])) {
     $messages[] = array(
-      'message' => t('Bundle - %bundle does not exists.', array('%bundle' => $bundle_name), $context),
-      'type'    => $message_type,
+      'message' => t('Bundle - %bundle for the entity type - %entity does not exists.',
+        array('%bundle' => $bundle_name, '%entity' => $entity_type), $context),
+      'type' => $message_type,
     );
   }
 
@@ -227,7 +232,7 @@ function node_deploy_extra_check_structure($entity_type, $entity) {
 function deploy_extra_log_message_to_text($data) {
   $text = '';
   foreach ($data as $row) {
-    $text .= $row['type'] . '-' . $row['message'] . '<br>';
+    $text .= $row['type'] . ' : ' . $row['message'] . '<br>';
   }
 
   return $text;
