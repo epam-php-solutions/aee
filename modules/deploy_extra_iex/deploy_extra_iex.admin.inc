@@ -8,11 +8,15 @@
 /**
  * Import form.
  *
+ * @param $form
+ * @param $form_state
+ *
+ * @see deploy_extra_iex_entity_import_form_validate()
  * @see deploy_extra_iex_entity_import_form_submit()
  *
  * @return mixed
  */
-function deploy_extra_iex_entity_import_form() {
+function deploy_extra_iex_entity_import_form($form, &$form_state) {
   // Use in translation context.
   $context = array('context' => DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT);
 
@@ -25,16 +29,25 @@ function deploy_extra_iex_entity_import_form() {
   // Get plugins.
   $formats = deploy_extra_iex_get_export_formats_plugins();
   $options = array();
+  $plugins_forms = array();
+
   if (!empty($formats)) {
     foreach($formats as $format) {
+      // Add format name to options array.
       $options[$format['handler']['class']] = $format['name'];
+
+      // Initialize plugin format.
+      $plugin_format = new $format['handler']['class'];
+
+      // Get plugin config form.
+      $plugins_forms['config'] = $plugin_format->configImportForm($form_state);
     }
   }
 
-  // If deploy_extra_log is enable. show the additional settings.
+  // If deploy_extra_log is enable, show the additional settings.
   if (module_exists('deploy_extra_log')) {
     // Config of import.
-    $form['import']['config'] = array(
+    $form['import']['import_config'] = array(
       '#type'  => 'checkboxes',
       '#title' => t('Configuration of import', array(), $context),
       '#options' => array(
@@ -45,15 +58,19 @@ function deploy_extra_iex_entity_import_form() {
     );
   }
 
-  // Formats of import.
+  // List of import formats.
   $form['import']['format'] = array(
     '#type'  => 'radios',
     '#title' => t('Choose import formats', array(), $context),
     '#options' => $options,
-    '#default_value' => 'form',
+    '#default_value' => 'DeployExtraJSON',
     '#required' => TRUE,
   );
 
+  // Add config plugins forms.
+  $form['import']['plugins_config'] = $plugins_forms;
+
+  // Get all import methods.
   $methods = array();
   foreach (module_invoke_all('deploy_extra_iex_methods') as $method => $array) {
     if ($array['import_label'] != 'none') {
@@ -61,7 +78,7 @@ function deploy_extra_iex_entity_import_form() {
     }
   }
 
-  // Methods of import.
+  // List of import methods.
   $form['import']['method'] = array(
     '#type'  => 'radios',
     '#title' => t('Choose mode', array(), $context),
@@ -70,7 +87,7 @@ function deploy_extra_iex_entity_import_form() {
     '#required' => TRUE,
   );
 
-  // Import textarea form.
+  // Import text area form.
   $form['import']['form'] = array(
     '#type'   => 'textarea',
     '#title'  => t('Paste you code here', array(), $context),
@@ -94,11 +111,36 @@ function deploy_extra_iex_entity_import_form() {
     ),
   );
 
+  // Path to file in directory.
+  $form['import']['file_path'] = array(
+    '#type'   => 'textfield',
+    '#title'  => t('Path to txt file', array(), $context),
+    '#field_prefix' => 'default/files/',
+    '#description' => t('Please write the full path to file. Path must include file name, which you would like to import.'),
+    '#states' => array(
+      'enabled' => array(
+        ':input[name="method"]' => array(
+          'value' => 'file_for_downloading',
+        ),
+      ),
+      'visible' => array(
+        ':input[name="method"]' => array(
+          'value' => 'file_for_downloading',
+        ),
+      ),
+      'required' => array(
+        ':input[name="method"]' => array(
+          'value' => 'file_for_downloading',
+        ),
+      ),
+    ),
+  );
+
   // File upload form.
   $form['import']['upload'] = array(
     '#type'   => 'managed_file',
     '#title'  => t('Upload deploy txt file', array(), $context),
-    '#descripion' => t('Only txt files are allowed.'),
+    '#description' => t('Only txt files are allowed.', array(), $context),
     '#upload_location'   => 'public://deploy_import/',
     '#upload_validators' => array(
       'file_validate_extensions' => array('txt'),
@@ -137,63 +179,104 @@ function deploy_extra_iex_entity_import_form() {
 }
 
 /**
- * Submission handler for deploy_extra_iex_entity_import_form().
+ * Validation handler for deploy_extra_iex_entity_import_form().
+ *
+ * @throws DeployPlanRunningException
  */
-function deploy_extra_iex_entity_import_form_submit($form, $form_state) {
+function deploy_extra_iex_entity_import_form_validate($form, &$form_state) {
   // Use in translation context.
   $context = array('context' => DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT);
 
   // Get values.
   $values = $form_state['values'];
   $format = $values['format'];
+  $method = $values['method'];
+  $data = '';
 
-  // Default value.
-  $config = array();
-  if (isset($values['config'])) {
-    $config = $values['config'];
+  switch ($method) {
+    case 'file_for_downloading':
+      $path = $values['file_path'];
+      $uri = 'public://' . $path;
+
+      if (file_exists($uri)) {
+        $data = file_get_contents($uri);
+      }
+      break;
+
+    case 'form':
+      $data = $values['form'];
+      break;
+
+    case 'file':
+      // Get file ID.
+      $fid = $values['upload'];
+      // Load the file.
+      $file = file_load($fid);
+      // Get the data from file or form.
+      $data = file_get_contents($file->uri);
+      break;
   }
 
-  // Get file ID.
-  $fid = $values['upload'];
+  if (empty($data)) {
+    drupal_set_message(t("You have empty data of entities", array(), $context), 'error');
+    $form_state['rebuild'] = TRUE;
+    return;
+  }
 
-  // Load the file.
-  $file = file_load($fid);
+  // Load export formatter and decode the data of entities.
+  $formatter = deploy_extra_iex_get_export_formats_plugins($format);
+  $class   = new $formatter['handler']['class'];
+  $decoded = $class->decodeData($data);
+
+  if (!isset($decoded['processor_config']['lock_name'])) {
+    drupal_set_message(t("You have incorrect data of entities", array(), $context), 'error');
+    $form_state['rebuild'] = TRUE;
+    return;
+  }
+
+  // We only allow one import process of each plan at the time.
+  $lock_name = $decoded['processor_config']['lock_name'];
+  if (!lock_acquire($lock_name)) {
+    throw new DeployPlanRunningException(t('The import of @lock_name is already running.', array('@lock_name' => $lock_name), $context));
+  }
+
+  // Pass data to submission function.
+  $form_state['deploy_extra_iex_data'] = $decoded;
+}
+
+/**
+ * Submission handler for deploy_extra_iex_entity_import_form().
+ */
+function deploy_extra_iex_entity_import_form_submit($form, $form_state) {
+  // Use in translation context.
+  $context = array('context' => DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT);
+
+  // Default value.
+  $import_config = array();
+  if (isset($values['import_config'])) {
+    $import_config = $values['import_config'];
+  }
+
+  // Decoded data.
+  $data = $form_state['deploy_extra_iex_data'];
 
   // Initialize operations array.
   $operations = array();
 
-  if (!$file && empty($values['form'])) {
-    drupal_set_message(t("You can't to import empty data", array(), $context), 'error');
-    return $form;
-  }
-
-  // Get the data from file or form.
-  $data = $file ? file_get_contents($file->uri) : $values['form'];
-
-  // Load export formatter and decode the data of entities.
-  $formatter = deploy_extra_iex_get_export_formats_plugins($format);
-  $class = new $formatter['handler']['class'];
-  $data  = $class->decodeData($data);
-
-  // We only allow one import process of each plan at the time.
-  $lock_name = $data['lock_name'];
-  if (!lock_acquire($lock_name)) {
-    throw new DeployPlanRunningException(t('The import of @lock_name is already running.', array('@lock_name' => $lock_name)));
-  }
-
   if (!empty($data['entities'])) {
     foreach($data['entities'] as $entity) {
+      $import_config['deployment_key'] = $entity['__metadata']['deploy_extra']['deployment_key'];
       $operations[] = array('deloy_extra_import_entity', array(
         $entity['__metadata']['type'],
         $entity['uuid'],
-        $entity,
-        $config,
+        (object)$entity,
+        $import_config,
       ));
     }
   }
 
   $batch = array(
-    'title' => t('Importing...'),
+    'title' => t('Importing...', array(), $context),
     'operations' => $operations,
     'finished'   => 'deploy_extra_iex_import_batch_finished_operation',
   );
@@ -203,7 +286,7 @@ function deploy_extra_iex_entity_import_form_submit($form, $form_state) {
 
 /**
  * Export form.
- *   Get data from cache and put them  to form.
+ *   Get data from cache and put them to form.
  */
 function deploy_extra_iex_entity_export_form($form, $form_state, $uuid = NULL) {
   $cache = deploy_extra_iex_get_cache($uuid);
@@ -216,13 +299,6 @@ function deploy_extra_iex_entity_export_form($form, $form_state, $uuid = NULL) {
 
   return $form;
 }
-
-/**
- * Ajax callback for output the data for downloading.
- *
- * @param $uuid
- *   Deployment key (unique uid).
- */
 
 /**
  * Ajax callback for output the data for downloading.
