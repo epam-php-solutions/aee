@@ -20,7 +20,7 @@ function deloy_extra_import_entity($entity_type, $uuid, $entity, $config) {
   deploy_extra_import_settings_preparation($config);
 
   // Add ability to change entity before executing save/update operation.
-  drupal_alter('deploy_extra_import_entity', $entity_type, $uuid, $entity, $config['deployment_key']);
+  drupal_alter('deploy_extra_import_entity', $entity_type, $uuid, $entity, $config);
 
   // Is the entity exists?
   $id = entity_get_id_by_uuid($entity_type, array($uuid));
