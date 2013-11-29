@@ -118,7 +118,7 @@ function deploy_extra_import_check_common($entity_type, $uuid, $entity, $deploym
   $messages = array();
 
   // Define message type.
-  $message_type = t('Common', array(), $context);
+  $message_type = t('General', array(), $context);
 
   // Obtain a list of available entity types on the site.
   $entities = entity_get_info();
