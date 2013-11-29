@@ -1,11 +1,6 @@
 <?php
 
 class DeployExtraYaml implements DeployExtraFormat {
-
-  public function __construct($config = array()) {
-    return $config;
-  }
-
   public function encodeData($data) {
     $this->loadSpyc();
     foreach($data['entities'] as &$entity) {
@@ -18,6 +13,14 @@ class DeployExtraYaml implements DeployExtraFormat {
   public function decodeData($data) {
     $this->loadSpyc();
     return Spyc::YAMLLoad($data);
+  }
+
+  public function configExportForm(&$form_state) {
+    return array();
+  }
+
+  public function configImportForm(&$form_state) {
+    return array();
   }
 
   /**

@@ -23,22 +23,25 @@ class DeployProcessorForm extends DeployProcessorMemory {
     foreach ($iterator as $entity) {
       $this->data[] = $entity;
 
+      if(isset($entity->__metadata)) {
+        $entity->__metadata['deploy_extra']['deployment_key'] = $deployment_key;
+      }
+
       // Let other modules have their say.
-      drupal_alter('deploy_extra_export_entity', $entity);
+      $config['deployment_key'] = $deployment_key;
+      drupal_alter('deploy_extra_export_entity', $entity, $config);
     }
   }
 
   public function publish($deployment_key, DeployEndpoint $endpoint, $lock_name = NULL) {
     $url = 'admin/structure/deploy';
     $this->config['url'] = ($this->config['export_method'] == 'form' ? $url . '/export/' . $deployment_key : $url);
+    $this->config['lock_name'] = $lock_name;
+    $this->config['plan_name'] = $this->aggregator->plan->name;
 
     $params = array(
       $deployment_key,
-      $this->config['export_method'],
-      $this->config['destination'],
-      $this->aggregator->plan->name,
-      $lock_name,
-      $this->config['export_format'],
+      $this->config,
     );
 
     // Add to results params.
@@ -70,13 +73,21 @@ class DeployProcessorForm extends DeployProcessorMemory {
     // Get plugins.
     $formats = deploy_extra_iex_get_export_formats_plugins();
 
-    // Initialize the options array.
+    // Initialize the arrays.
     $options = array();
+    $output  = array();
+    $plugins_forms = array();
 
     // Fill the options array.
     if (!empty($formats)) {
       foreach($formats as $format) {
         $options[$format['handler']['class']] = $format['name'];
+
+        // Initialize the plugin.
+        $form_plugin = new $format['handler']['class'];
+
+        // Collect the plagins form configurations.
+        $plugins_forms['plugins_config'] = $form_plugin->configExportForm($form_state);
       }
     }
 
@@ -91,32 +102,40 @@ class DeployProcessorForm extends DeployProcessorMemory {
     // Let other modules change the methods options.
     drupal_alter('deploy_extra_iex_methods_alter', $methods);
 
-    return array(
-      'export_method' => array(
-        '#type' => 'radios',
-        '#title' => t('Choose the export method', array(), $context),
-        '#options'  => $methods,
-        '#required' => TRUE,
-      ),
-      'destination' => array(
-        '#type' => 'textfield',
-        '#field_prefix' => 'default/files/',
-        '#default_value' => isset($this->config['destination']) ? $this->config['destination'] : '',
-        '#description' => t('The destination folder, where deploy files will located.', array(), $context),
-        '#states' => array(
-          'visible' => array(
-            ':input[name="processor_config[export_method]"]' => array(
-              'value' => 'file',
-            )
-          ),
+    // Export methods (form, file & etc.).
+    $output['export_method'] = array(
+      '#type' => 'radios',
+      '#title' => t('Choose the export method', array(), $context),
+      '#options'  => $methods,
+      '#required' => TRUE,
+    );
+
+    // Destination folder, when save the export file on server.
+    $output['destination'] = array(
+      '#type' => 'textfield',
+      '#field_prefix' => 'default/files/',
+      '#default_value' => isset($this->config['destination']) ? $this->config['destination'] : '',
+      '#description' => t('The destination folder, where deploy files will located.', array(), $context),
+      '#states' => array(
+        'visible' => array(
+          ':input[name="processor_config[export_method]"]' => array(
+            'value' => 'file',
+          )
         ),
       ),
-      'export_format' => array(
-        '#type'  => 'radios',
-        '#title' => t('Choose the export format', array(), $context),
-        '#options'  => $options,
-        '#required' => TRUE,
-      ),
     );
+
+    // Export formats (JSON, YAML & etc.).
+    $output['export_format'] = array(
+      '#type'  => 'radios',
+      '#title' => t('Choose the export format', array(), $context),
+      '#options'  => $options,
+      '#required' => TRUE,
+    );
+
+    // Add plugins config forms.
+    $output['plugins_config'] = $plugins_forms['plugins_config'];
+
+    return $output;
   }
 }
