@@ -32,6 +32,7 @@ function _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status,
     'deployment_uuid' => $deployment_key,
     'entity_uuid' => $uuid,
   );
+
   $fields = array(
     'deployment_uuid' => $deployment_key,
     'entity_uuid' => $uuid,
@@ -53,18 +54,28 @@ function _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status,
     $keys['entity_vuuid'] = $fields['entity_vuuid'] = $entity_vuuid;
   }
 
-  db_merge('deploy_extra_import_log')
+  db_merge(DEPLOY_EXTRA_LOG_TABLE_NAME)
     ->key($keys)
     ->fields($fields)
     ->execute();
 }
 
 /**
- * @TODO add the proper description
+ * Updating the entity import status.
  */
 function deploy_extra_import_log_status($deployment_key, $uuid, $entity_type, $status, $entity_vuuid = NULL) {
-  // We haven't messages.
-  _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status, FALSE, $entity_vuuid);
+
+  $update = db_update(DEPLOY_EXTRA_LOG_TABLE_NAME)
+    ->fields(array('status' => $status))
+    ->condition('deployment_uuid', $deployment_key)
+    ->condition('entity_type', $entity_type)
+    ->condition('entity_uuid', $uuid);
+
+  if(!empty($entity_vuuid)) {
+    $update->condition('entity_vuuid', $entity_vuuid);
+  }
+
+  $update->execute();
 }
 
 /**
@@ -91,7 +102,6 @@ function deploy_extra_import_check($entity_type, $uuid, $entity, $deployment_key
     return;
   }
 
-  // @TODO How to improve this?
   // Make an entity local.
   entity_make_entity_local($entity_type, $entity);
 

@@ -8,6 +8,7 @@
 
 // Translation context.
 define('DEPLOY_EXTRA_LOG_TRANSLATE_CONTEXT', 'deploy_extra_log');
+define('DEPLOY_EXTRA_LOG_TABLE_NAME', 'deploy_extra_import_log');
 
 /**
  * Include checking structure hook implementations.
