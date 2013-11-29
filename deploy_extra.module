@@ -6,6 +6,16 @@
  */
 
 /**
+ * Deployment statuses.
+ */
+define('DEPLOY_EXTRA_IMPORT_STATUS_PROCESSED', 0);
+define('DEPLOY_EXTRA_IMPORT_STATUS_SAVED', 1);
+define('DEPLOY_EXTRA_IMPORT_STATUS_UPDATED', 2);
+define('DEPLOY_EXTRA_IMPORT_STATUS_SKIPPED', 3);
+define('DEPLOY_EXTRA_IMPORT_STATUS_TEST_MODE', 4);
+define('DEPLOY_EXTRA_IMPORT_STATUS_FAILED', 5);
+
+/**
  * Include the services hook implementations.
  */
 module_load_include('inc', 'deploy_extra', 'deploy_extra.core');

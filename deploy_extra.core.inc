@@ -6,8 +6,7 @@
  */
 
 /**
- * Import function on the goal side.
- * @TODO add right description.
+ * The entry point for the import process.
  *
  * @param $entity_type
  * @param $uuid
@@ -20,16 +19,16 @@ function deloy_extra_import_entity($entity_type, $uuid, $entity, $config) {
   deploy_extra_import_settings_preparation($config);
 
   // Add ability to change entity before executing save/update operation.
-  drupal_alter('deploy_extra_import_entity', $entity_type, $uuid, $entity, $config['deployment_key']);
+  drupal_alter('deploy_extra_import_entity', $entity_type, $uuid, $entity, $config);
+
+  // Is the entity exists?
+  $id = entity_get_id_by_uuid($entity_type, array($uuid));
+  $config['entity_exists'] = !empty($id[$uuid]);
 
   // If enable skip updates mode.
-  if ($config['skip']) {
-    $id = entity_get_id_by_uuid($entity_type, array($uuid));
-
+  if ($config['skip'] && $config['entity_exists']) {
     // Entity already exists. Enable tmode for this entity.
-    if (!empty($id[$uuid])) {
-      $config['tmode'] = TRUE;
-    }
+    $config['tmode'] = TRUE;
   }
 
   // Perform update/create process.
@@ -56,25 +55,52 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
       $entity = (object) $entity;
     }
 
-    // Perform logging process and return.
-    if ($config['adv_log'] && $config['deployment_key'] && module_exists('deploy_extra_log')) {
+    // Perform checking process.
+    if (deploy_extra_adv_log_ability($config)) {
       // Create a clone of the entity object to check,
       // that forbid directly changing entity object.
       $clone = clone $entity;
       deploy_extra_import_check($entity_type, $uuid, $clone, $config['deployment_key']);
     }
 
-    // Perform save/update operation.
-    if(!$config['tmode']) {
+    // Test mode.
+    if (!empty($config['tmode'])) {
+      $status = ($config['skip'] && $config['entity_exists']) ? DEPLOY_EXTRA_IMPORT_STATUS_SKIPPED : DEPLOY_EXTRA_IMPORT_STATUS_TEST_MODE;
+    }
+    else {
+      // Perform save/update operation.
       entity_uuid_save($entity_type, $entity);
+      $status = ($config['entity_exists']) ? DEPLOY_EXTRA_IMPORT_STATUS_UPDATED : DEPLOY_EXTRA_IMPORT_STATUS_SAVED;
     }
 
-    return $entity;
-  }
-  catch (Exception $exception) {
+    // Save the status of the operation into the log.
+    if (deploy_extra_adv_log_ability($config)) {
+      _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, $status);
+    }
+
+  } catch (Exception $exception) {
     watchdog_exception('deploy_extra', $exception);
+
+    // Save the status of the operation into the log.
+    if (deploy_extra_adv_log_ability($config)) {
+      _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, DEPLOY_EXTRA_IMPORT_STATUS_FAILED);
+    }
+
     return services_error($exception, 406, $entity);
   }
+}
+
+/**
+ * @param $entity_type
+ * @param $entity
+ * @param $uuid
+ * @param $config
+ * @param $status
+ */
+function _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, $status) {
+  // Check whether the entity supports revision.
+  $vuuid = deploy_extra_get_vuuid_from_entity($entity, $entity_type);
+  deploy_extra_import_log_status($config['deployment_key'], $uuid, $entity_type, $status, $vuuid);
 }
 
 /**
@@ -125,15 +151,17 @@ function deploy_extra_get_vuuid_from_entity($entity, $entity_type) {
   return FALSE;
 }
 
-/*
+/**
  * Helper function.
- * Returns settings to be stored in the entity metadata.
+ * Check whether the import supports advanced logging.
+ *
+ * @param $config
+ * array with import process settings.
+ * @return bool
  */
-function deploy_extra_to_metadata() {
-  return array(
-    'adv_log',
-    'tmode',
-    'deployment_key',
-    'skip',
-  );
+function deploy_extra_adv_log_ability($config) {
+  if($config['adv_log'] && $config['deployment_key'] && module_exists('deploy_extra_log')) {
+    return TRUE;
+  }
+  return FALSE;
 }

@@ -26,11 +26,7 @@
  * @param string $message
  * The message for logging
  */
-function _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status = 0, $data = array(), $entity_vuuid = NULL) {
-
-  $message = $data;
-  // Convert an array of log messages into a plain text.
-  deploy_extra_log_message_to_text($message);
+function _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status, $data, $entity_vuuid) {
 
   $keys = array(
     'deployment_uuid' => $deployment_key,
@@ -42,13 +38,19 @@ function _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status 
     'entity_type' => $entity_type,
     'status' => $status,
     'timestamp' => time(),
-    'data' => !empty($data) ? serialize($data) : NULL,
-    'message' => $message,
   );
 
+  if(is_array($data)) {
+
+    // Convert an array of log messages into a plain text.
+    $message = deploy_extra_log_message_to_text($data);
+
+    $fields['data']    = !empty($data) ? serialize($data) : NULL;
+    $fields['message'] = $message;
+  }
+
   if ($entity_vuuid) {
-    $keys['entity_vuuid'] = $entity_vuuid;
-    $fields['entity_vuuid'] = $entity_vuuid;
+    $keys['entity_vuuid'] = $fields['entity_vuuid'] = $entity_vuuid;
   }
 
   db_merge('deploy_extra_import_log')
@@ -60,15 +62,16 @@ function _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status 
 /**
  * @TODO add the proper description
  */
-function deploy_extra_import_log_status($deployment_key, $uuid, $entity_type, $status, $messages = array(), $entity_vuuid = NULL) {
-  _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status, $messages, $entity_vuuid);
+function deploy_extra_import_log_status($deployment_key, $uuid, $entity_type, $status, $entity_vuuid = NULL) {
+  // We haven't messages.
+  _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status, FALSE, $entity_vuuid);
 }
 
 /**
  * @TODO add the proper description
  */
 function deploy_extra_import_log($deployment_key, $uuid, $entity_type, $messages = array(), $entity_vuuid = NULL) {
-  $status = DEL_IMPORT_STATUS_PROCESSED;
+  $status = DEPLOY_EXTRA_IMPORT_STATUS_PROCESSED;
   _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status, $messages, $entity_vuuid);
 }
 
@@ -118,7 +121,7 @@ function deploy_extra_import_check_common($entity_type, $uuid, $entity, $deploym
   $messages = array();
 
   // Define message type.
-  $message_type = t('Common', array(), $context);
+  $message_type = t('General', array(), $context);
 
   // Obtain a list of available entity types on the site.
   $entities = entity_get_info();
@@ -126,7 +129,7 @@ function deploy_extra_import_check_common($entity_type, $uuid, $entity, $deploym
   // If this entity type does not exist on the site.
   // This situation isn't possible if you use the rest service,
   // but obviously possible for import from file/form.
-  if ($entities[$entity_type]) {
+  if (empty($entities[$entity_type])) {
     $messages[] = array(
       'message' => t('This entity type - %entity_type does not exist on the site.', array('%entity_type' => $entity_type), $context),
       'type'    => $message_type,
@@ -134,7 +137,7 @@ function deploy_extra_import_check_common($entity_type, $uuid, $entity, $deploym
   }
 
   // If this entity type doesn't support UUIDs.
-  if (!empty($entities[$entity_type]['uuid'])) {
+  if (empty($entities[$entity_type]['uuid'])) {
     $messages[] = array(
       'message' => t('This entity type - %entity_type does not support UUIDs.', array('%entity_type' => $entity_type), $context),
       'type'    => $message_type,
@@ -211,12 +214,13 @@ function node_deploy_extra_check_structure($entity_type, $entity) {
  * Helper function.
  * Converts an array of log messages into a plain text.
  */
-function deploy_extra_log_message_to_text(&$message) {
+function deploy_extra_log_message_to_text($data) {
   $text = '';
-  foreach ($message as $id => $data) {
-    $text .= $data['type'] . '-' . $data['message'] . '<br>';
+  foreach ($data as $row) {
+    $text .= $row['type'] . '-' . $row['message'] . '<br>';
   }
-  $message = $text;
+
+  return $text;
 }
 
 /**
@@ -228,12 +232,12 @@ function deploy_extra_log_message_to_text(&$message) {
 function _deploy_extra_log_status_to_string ($status) {
 
   $statuses = array(
-    DEL_IMPORT_STATUS_PROCESSED => t('Processed'),
-    DEL_IMPORT_STATUS_SAVED => t('Saved'),
-    DEL_IMPORT_STATUS_UPDATED => t('Updated'),
-    DEL_IMPORT_STATUS_SKIPPED => t('Skipped'),
-    DEL_IMPORT_STATUS_TEST_MODE => t('Test Mode'),
-    DEL_IMPORT_STATUS_FAILED => t('Failed'),
+    DEPLOY_EXTRA_IMPORT_STATUS_PROCESSED => t('Processed'),
+    DEPLOY_EXTRA_IMPORT_STATUS_SAVED     => t('Saved'),
+    DEPLOY_EXTRA_IMPORT_STATUS_UPDATED   => t('Updated'),
+    DEPLOY_EXTRA_IMPORT_STATUS_SKIPPED   => t('Skipped'),
+    DEPLOY_EXTRA_IMPORT_STATUS_TEST_MODE => t('Test Mode'),
+    DEPLOY_EXTRA_IMPORT_STATUS_FAILED    => t('Failed'),
   );
 
   if(array_key_exists($status, $statuses)) {
