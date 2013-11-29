@@ -6,8 +6,7 @@
  */
 
 /**
- * Import function on the goal side.
- * @TODO add right description.
+ * The entry point for the import process.
  *
  * @param $entity_type
  * @param $uuid
@@ -75,7 +74,7 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
     }
 
     // Save the status of the operation into the log.
-    if (module_exists('deploy_extra_log')) {
+    if (deploy_extra_adv_log_ability($config)) {
       _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, $status);
     }
 
@@ -83,7 +82,7 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
     watchdog_exception('deploy_extra', $exception);
 
     // Save the status of the operation into the log.
-    if (module_exists('deploy_extra_log')) {
+    if (deploy_extra_adv_log_ability($config)) {
       _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, DEPLOY_EXTRA_IMPORT_STATUS_FAILED);
     }
 
@@ -91,9 +90,16 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
   }
 }
 
+/**
+ * @param $entity_type
+ * @param $entity
+ * @param $uuid
+ * @param $config
+ * @param $status
+ */
 function _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, $status) {
   if (!empty($config['deployment_key'])) {
-    // Checking revision.
+    // Check whether the entity supports revision.
     $vuuid = deploy_extra_get_vuuid_from_entity($entity, $entity_type);
     deploy_extra_import_log_status($config['deployment_key'], $uuid, $entity_type, $status, array(), $vuuid);
   }
@@ -144,5 +150,20 @@ function deploy_extra_get_vuuid_from_entity($entity, $entity_type) {
     }
   }
 
+  return FALSE;
+}
+
+/**
+ * Helper function.
+ * Check whether the import supports advanced logging.
+ *
+ * @param $config
+ * array with import process settings.
+ * @return bool
+ */
+function deploy_extra_adv_log_ability($config) {
+  if($config['adv_log'] && $config['deployment_key'] && module_exists('deploy_extra_log')) {
+    return TRUE;
+  }
   return FALSE;
 }
