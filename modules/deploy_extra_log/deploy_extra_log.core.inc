@@ -26,11 +26,7 @@
  * @param string $message
  * The message for logging
  */
-function _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status = 0, $data = array(), $entity_vuuid = NULL) {
-
-  $message = $data;
-  // Convert an array of log messages into a plain text.
-  deploy_extra_log_message_to_text($message);
+function _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status, $data, $entity_vuuid) {
 
   $keys = array(
     'deployment_uuid' => $deployment_key,
@@ -42,13 +38,19 @@ function _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status 
     'entity_type' => $entity_type,
     'status' => $status,
     'timestamp' => time(),
-    'data' => !empty($data) ? serialize($data) : NULL,
-    'message' => $message,
   );
 
+  if(is_array($data)) {
+
+    // Convert an array of log messages into a plain text.
+    $message = deploy_extra_log_message_to_text($data);
+
+    $fields['data']    = !empty($data) ? serialize($data) : NULL;
+    $fields['message'] = $message;
+  }
+
   if ($entity_vuuid) {
-    $keys['entity_vuuid'] = $entity_vuuid;
-    $fields['entity_vuuid'] = $entity_vuuid;
+    $keys['entity_vuuid'] = $fields['entity_vuuid'] = $entity_vuuid;
   }
 
   db_merge('deploy_extra_import_log')
@@ -60,8 +62,9 @@ function _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status 
 /**
  * @TODO add the proper description
  */
-function deploy_extra_import_log_status($deployment_key, $uuid, $entity_type, $status, $messages = array(), $entity_vuuid = NULL) {
-  _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status, $messages, $entity_vuuid);
+function deploy_extra_import_log_status($deployment_key, $uuid, $entity_type, $status, $entity_vuuid = NULL) {
+  // We haven't messages.
+  _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status, FALSE, $entity_vuuid);
 }
 
 /**
@@ -211,12 +214,13 @@ function node_deploy_extra_check_structure($entity_type, $entity) {
  * Helper function.
  * Converts an array of log messages into a plain text.
  */
-function deploy_extra_log_message_to_text(&$message) {
+function deploy_extra_log_message_to_text($data) {
   $text = '';
-  foreach ($message as $id => $data) {
-    $text .= $data['type'] . '-' . $data['message'] . '<br>';
+  foreach ($data as $row) {
+    $text .= $row['type'] . '-' . $row['message'] . '<br>';
   }
-  $message = $text;
+
+  return $text;
 }
 
 /**
