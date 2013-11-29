@@ -126,7 +126,7 @@ function deploy_extra_import_check_common($entity_type, $uuid, $entity, $deploym
   // If this entity type does not exist on the site.
   // This situation isn't possible if you use the rest service,
   // but obviously possible for import from file/form.
-  if ($entities[$entity_type]) {
+  if (empty($entities[$entity_type])) {
     $messages[] = array(
       'message' => t('This entity type - %entity_type does not exist on the site.', array('%entity_type' => $entity_type), $context),
       'type'    => $message_type,
@@ -134,7 +134,7 @@ function deploy_extra_import_check_common($entity_type, $uuid, $entity, $deploym
   }
 
   // If this entity type doesn't support UUIDs.
-  if (!empty($entities[$entity_type]['uuid'])) {
+  if (empty($entities[$entity_type]['uuid'])) {
     $messages[] = array(
       'message' => t('This entity type - %entity_type does not support UUIDs.', array('%entity_type' => $entity_type), $context),
       'type'    => $message_type,
