@@ -133,16 +133,19 @@ function deploy_extra_iex_deploy_extra_iex_methods() {
       'export_label' => 'Push to form',
       'import_label' => 'Import from form',
       'export_callback' => 'deploy_extra_iex_form_export',
+      'import_callback' => 'deploy_extra_iex_form_import',
     ),
     'file_for_downloading' => array(
       'export_label' => 'Push to browser for downloading',
       'import_label' => 'Import from file directory on server.',
       'export_callback' => 'deploy_extra_iex_file_download_export',
+      'import_callback' => 'deploy_extra_iex_file_download_import',
     ),
     'file' => array(
       'export_label' => 'Push to destination on server folder',
       'import_label' => 'Import from file',
       'export_callback' => 'deploy_extra_iex_file_export',
+      'import_callback' => 'deploy_extra_iex_file_import',
     ),
   );
 }

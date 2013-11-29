@@ -75,7 +75,7 @@ class DeployProcessorForm extends DeployProcessorMemory {
     // Get export formats options.
     $options = deploy_extra_iex_get_export_formats_options($form_state, 'configExportForm');
 
-    // Let other modules add their options.
+    // Get export methods options.
     $methods = deploy_extra_iex_get_methods_options('export_label');
 
     // Let other modules change the methods options.
