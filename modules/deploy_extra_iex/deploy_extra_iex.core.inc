@@ -78,7 +78,8 @@ function deploy_extra_iex_file_export($success, $results) {
   $cid   = 'deploy_extra_iex_' . $uuid;
   $cache = cache_get($cid);
 
-  $destination = trim($results['destination']);
+  $config = $results['processor_config'];
+  $destination = trim($config['destination']);
   $dir  = 'public://' . $destination . '/';
 
   // Check if directory is exist.
@@ -86,7 +87,7 @@ function deploy_extra_iex_file_export($success, $results) {
     mkdir($dir);
   }
 
-  $filename = $results['plan_name'] . '_' . date("d-m-Y(H.i)") . '.txt';
+  $filename = $config['plan_name'] . '_' . date("d-m-Y(H.i)") . '.txt';
   $file = fopen($dir . $filename, 'a+');
   fwrite($file, $cache->data);
 

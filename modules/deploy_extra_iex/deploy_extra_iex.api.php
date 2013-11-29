@@ -61,3 +61,21 @@ function hook_deploy_extra_iex_methods() {
 function hook_deploy_extra_iex_methods_alter(&$methods) {
 
 }
+
+/**
+ * Allow modules add own export formats plugins.
+ */
+function hook_deploy_extra_iex_export_formats() {
+  $path = '...';
+  return array(
+    'OwnPluginName' => array(
+      'name' => 'Own plugin name',
+      'description' => 'Provides new export format.',
+      'handler' => array(
+        'class' => 'OwnPluginName',
+        'file'  => 'OwnPluginName.inc',
+        'path'  => $path,
+      ),
+    ),
+  );
+}

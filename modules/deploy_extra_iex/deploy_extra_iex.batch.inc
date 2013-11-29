@@ -21,18 +21,19 @@
  */
 function deploy_extra_iex_export_batch_finished_operation($success, $results, $operations) {
   $uuid = $results['uuid'];
-  $lock_name = $results['lock_name'];
+  $processor_config = $results['processor_config'];
+  $lock_name = $processor_config['lock_name'];
 
   try {
-    $export_method = $results['export_method'];
-    $export_format = $results['export_format'];
+    $export_method = $processor_config['export_method'];
+    $export_format = $processor_config['export_format'];
 
     // Load export formatter and encode the data of entities.
     $formatter = deploy_extra_iex_get_export_formats_plugins($export_format);
     $class = new $formatter['handler']['class'];
     $data  = $class->encodeData(
       array(
-        'lock_name' => $results['lock_name'],
+        'processor_config' => $processor_config,
         'entities'  => $results['entities'],
       )
     );
@@ -93,29 +94,12 @@ function deploy_extra_iex_prepare_data_entities($entity, &$context = NULL) {
  * @param $uuid
  *   Unique uid (deployment key).
  *
- * @param $export_method
- *   Method of export (file, path, form).
- *
- * @param $destination
- *   Destination folder for saving file, if choose the path method.
- *
- * @param $plan_name
- *   Deploy plan name.
- *
- * @param $lock_name
- *   The lock name.
- *
- * @param $export_format
- *   Export format (json, yaml & etc.).
+ * @param $processor_config
+ *   Configuration array of processor.
  *
  * @param null $context
- *   Array passed from operations.
  */
-function deploy_extra_iex_pass_deploy_info($uuid, $export_method, $destination, $plan_name, $lock_name, $export_format, &$context = NULL) {
+function deploy_extra_iex_pass_deploy_info($uuid, $processor_config, &$context = NULL) {
   $context['results']['uuid'] = $uuid;
-  $context['results']['export_method'] = $export_method;
-  $context['results']['export_format'] = $export_format;
-  $context['results']['destination']   = $destination;
-  $context['results']['plan_name'] = $plan_name;
-  $context['results']['lock_name'] = $lock_name;
+  $context['results']['processor_config'] = $processor_config;
 }
