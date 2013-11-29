@@ -95,13 +95,6 @@ function deploy_extra_import_check($entity_type, $uuid, $entity, $deployment_key
   // Perform general checks for entity.
   $messages = deploy_extra_import_check_common($entity_type, $uuid, $entity, $deployment_key);
 
-  // Not necessary to perform other checks.
-  if(!empty($messages)) {
-    // Write messages to log.
-    deploy_extra_import_log($deployment_key, $uuid, $entity_type, $messages, $vuuid);
-    return;
-  }
-
   // Make an entity local.
   entity_make_entity_local($entity_type, $entity);
 
@@ -211,10 +204,10 @@ function node_deploy_extra_check_structure($entity_type, $entity) {
     $lang = language_list();
 
     $wrapper = entity_metadata_wrapper($entity_type, $entity);
-    $node_lang = $wrapper->language;
+    $node_lang = $wrapper->language->value();
 
     // No such language on the site.
-    if (!isset($lang[$node_lang])) {
+    if (!isset($lang[$node_lang]) && $node_lang != LANGUAGE_NONE) {
       $messages[] = array(
         'message' => t('No such language - %lang on the site.', array('%lang' => $node_lang), $context),
         'type' => $message_type,
