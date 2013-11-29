@@ -19,7 +19,7 @@ interface DeployExtraFormat {
    * Decode method.
    *
    * @param $data
-   *    Data will be decoded.
+   *   Data will be decoded.
    *
    * @return mixed
    */

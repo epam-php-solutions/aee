@@ -222,7 +222,9 @@ function deploy_extra_iex_entity_import_form_submit($form, $form_state) {
   // Default value.
   $import_config = array();
   if (isset($form_state['values']['import_config'])) {
-    $import_config = $form_state['values']['import_config'];
+    foreach ($form_state['values']['import_config'] as $key => $value) {
+      $import_config[$key] = !empty($value) ? 1 : 0;
+    }
   }
 
   // Import data.
@@ -240,7 +242,7 @@ function deploy_extra_iex_entity_import_form_submit($form, $form_state) {
       $options = array(
         $entity['__metadata']['type'],
         $entity['uuid'],
-        (object)$entity,
+        $entity,
         $import_config,
       );
 

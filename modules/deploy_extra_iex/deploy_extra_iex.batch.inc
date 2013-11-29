@@ -44,6 +44,7 @@ function deploy_extra_iex_export_batch_finished_operation($success, $results, $o
     // Invoke all methods.
     $methods = module_invoke_all('deploy_extra_iex_methods');
 
+    // If exist method, call the export callback.
     if (isset($methods[$export_method])) {
       $function = $methods[$export_method]['export_callback'];
       $function($success, $results);

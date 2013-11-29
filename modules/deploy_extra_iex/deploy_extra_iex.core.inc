@@ -135,19 +135,19 @@ function deploy_extra_iex_return_message($uuid, $success, $suffix = NULL) {
   $context = array('context' => DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT);
 
   // Default values.
-  $mstatus = 'error';
-  $dstatus = DEPLOY_STATUS_FAILED;
+  $mess_status = 'error';
+  $dlog_status = DEPLOY_STATUS_FAILED;
   $message = 'Export of entities has failed';
 
   // Override the values if result is success.
   if ($success) {
-    $mstatus = 'status';
-    $dstatus = DEPLOY_STATUS_PUBLISHED;
+    $mess_status = 'status';
+    $dlog_status = DEPLOY_STATUS_PUBLISHED;
     $message = 'Export of entities has done successfully!' . ($suffix ? ' ' . $suffix : '');
   }
 
-  deploy_log($uuid, $dstatus);
-  drupal_set_message(t($message, array(), $context), $mstatus);
+  deploy_log($uuid, $dlog_status);
+  drupal_set_message(t($message, array(), $context), $mess_status);
 }
 
 /**
@@ -205,7 +205,7 @@ function deploy_extra_iex_get_export_formats_options($form_state, $method) {
 function deploy_extra_iex_get_methods_options($label) {
   $methods = array();
   foreach (module_invoke_all('deploy_extra_iex_methods') as $method => $array) {
-    if ($array['export_label'] != 'none') {
+    if ($array[$label] != 'none') {
       $methods[$method] = $array[$label];
     }
   }
