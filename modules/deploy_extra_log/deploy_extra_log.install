@@ -54,10 +54,11 @@ function deploy_extra_log_schema() {
         'default' => 0,
       ),
       'message' => array(
+        'description' => 'Complementary message, e.g. the exception in case of a failure.',
         'type' => 'text',
         'not null' => FALSE,
         'size' => 'big',
-        'description' => 'Complementary message, e.g. the exception in case of a failure.',
+        'default' => 0,
       ),
       'data' => array(
         'description' => 'The additional serialized data.',

@@ -91,7 +91,6 @@ function deploy_extra_import_check($entity_type, $uuid, $entity, $deployment_key
     return;
   }
 
-  // @TODO How to improve this?
   // Make an entity local.
   entity_make_entity_local($entity_type, $entity);
 
