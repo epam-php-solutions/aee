@@ -32,8 +32,9 @@ function deploy_extra_endpoints_after_build($element, &$form_state) {
  */
 function deploy_extra_validate_endpoints($element, &$form_state) {
   $values = $form_state['values'];
-  $condition = isset($values['processor_plugin']) && $values['processor_plugin'] == 'DeployProcessorForm';
-  if ($condition && empty($element['#value'])) {
+  $plugin = isset($values['processor_plugin']) ? $values['processor_plugin'] : NULL;
+
+  if ($plugin && $plugin == 'DeployProcessorForm' && empty($element['#value'])) {
     // Use in translation context.
     $context = array('context' => DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT);
     form_error($element, t('For use Processor Form you must select at least one endpoint', array(), $context));
@@ -57,7 +58,10 @@ function deploy_extra_iex_get_export_formats_plugins($id = NULL) {
  * Form export callback.
  *
  * @param $success
+ *    Success or fail of batch operations.
+ *
  * @param $results
+ *    Array includes results and processor config.
  */
 function deploy_extra_iex_form_export($success, $results) {
   $uuid  = $results['uuid'];
@@ -71,7 +75,10 @@ function deploy_extra_iex_form_export($success, $results) {
  *   Save the encoded data of entities to file.
  *
  * @param $success
+ *    Success or fail of batch operations.
+ *
  * @param $results
+ *    Array includes results and processor config.
  */
 function deploy_extra_iex_file_export($success, $results) {
   $uuid  = $results['uuid'];
@@ -82,7 +89,7 @@ function deploy_extra_iex_file_export($success, $results) {
   $destination = trim($config['destination']);
   $dir  = 'public://' . $destination . '/';
 
-  // Check if directory is exist.
+  // Check if directory is exist, if not - create it.
   if (!is_dir($dir)) {
     mkdir($dir);
   }
@@ -94,6 +101,8 @@ function deploy_extra_iex_file_export($success, $results) {
   // Use in translation context.
   $context = array('context' => DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT);
   $suffix = t('File name is !file', array('!file' => l($filename, 'ajax/deploy/download/' . $uuid)), $context);
+
+  // Set message.
   deploy_extra_iex_return_message($uuid, $success, $suffix);
 }
 
@@ -101,39 +110,44 @@ function deploy_extra_iex_file_export($success, $results) {
  * File for downloading export callback.
  *
  * @param $success
+ *    Success or fail of batch operations.
+ *
  * @param $results
+ *    Array includes results and processor config.
  */
 function deploy_extra_iex_file_download_export($success, $results) {
+  // Use in translation context.
+  $context = array('context' => DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT);
+
   $uuid  = $results['uuid'];
   $file_link = l('export_entities_data.txt', 'ajax/deploy/download/' . $uuid);
-  $suffix = t('You can download it here !file', array('!file' => $file_link));
+  $suffix = t('You can download it here !file', array('!file' => $file_link), $context);
+
   // Set message.
   deploy_extra_iex_return_message($uuid, $success, $suffix);
 }
 
 /**
  * Return the message about status of export.
- *
- * @param $uuid
- * @param $success
- * @param null $suffix
  */
 function deploy_extra_iex_return_message($uuid, $success, $suffix = NULL) {
   // Use in translation context.
   $context = array('context' => DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT);
 
   // Default values.
-  $status  = 'error';
+  $mstatus = 'error';
+  $dstatus = DEPLOY_STATUS_FAILED;
   $message = 'Export of entities has failed';
 
   // Override the values if result is success.
   if ($success) {
-    $status  = 'status';
+    $mstatus = 'status';
+    $dstatus = DEPLOY_STATUS_PUBLISHED;
     $message = 'Export of entities has done successfully!' . ($suffix ? ' ' . $suffix : '');
   }
 
-  deploy_log($uuid, DEPLOY_STATUS_PUBLISHED);
-  drupal_set_message(t($message, array(), $context), $status);
+  deploy_log($uuid, $dstatus);
+  drupal_set_message(t($message, array(), $context), $mstatus);
 }
 
 /**
@@ -154,4 +168,47 @@ function uuid_load($uuid = NULL) {
   }
 
   return !empty($query) ? $uuid : FALSE;
+}
+
+/**
+ * Return export formats options.
+ */
+function deploy_extra_iex_get_export_formats_options($form_state, $method) {
+  // Get plugins.
+  $formats = deploy_extra_iex_get_export_formats_plugins();
+  $options = array();
+
+  // Fill the options array.
+  if (!empty($formats)) {
+    foreach($formats as $format) {
+      $options['plugins_formats'][$format['handler']['class']] = $format['name'];
+
+      // Initialize the plugin.
+      $plugin = new $format['handler']['class'];
+
+      // Collect the plugins form configurations.
+      $options['plugins_forms'] = $plugin->$method($form_state);
+    }
+  }
+
+  return $options;
+}
+
+/**
+ * Return methods options.
+ *
+ * @param $label
+ *   Export or import label.
+ *
+ * @return array
+ */
+function deploy_extra_iex_get_methods_options($label) {
+  $methods = array();
+  foreach (module_invoke_all('deploy_extra_iex_methods') as $method => $array) {
+    if ($array['export_label'] != 'none') {
+      $methods[$method] = $array[$label];
+    }
+  }
+
+  return $methods;
 }
