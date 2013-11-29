@@ -221,8 +221,8 @@ function deploy_extra_iex_entity_import_form_submit($form, $form_state) {
 
   // Default value.
   $import_config = array();
-  if (isset($values['import_config'])) {
-    $import_config = $values['import_config'];
+  if (isset($form_state['values']['import_config'])) {
+    $import_config = $form_state['values']['import_config'];
   }
 
   // Import data.
