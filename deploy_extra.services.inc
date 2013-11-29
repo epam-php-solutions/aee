@@ -87,4 +87,3 @@ function _deploy_extra_services_old_update_callback($callback = FALSE) {
 
   return variable_get('deploy_extra_services_old_update_callback', '_uuid_services_entity_update');
 }
-
