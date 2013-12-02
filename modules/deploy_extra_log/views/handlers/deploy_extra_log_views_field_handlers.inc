@@ -111,3 +111,32 @@ class deploy_extra_log_handler_filter_status_field extends views_handler_filter_
   }
 }
 
+/**
+ * Get message from data field.
+ */
+class deploy_extra_log_handler_data_message extends views_handler_field {
+
+  function construct() {
+    parent::construct();
+    $this->additional_fields['data'] = 'data';
+  }
+
+  function query() {
+    $this->ensure_my_table();
+    $this->add_additional_fields();
+  }
+
+  function render($values) {
+
+    $data = $this->get_value($values, 'data');
+
+    if(!empty($data)) {
+      $data = unserialize($data);
+      if(isset($data['message']) && !empty($data['message'])) {
+        $text = deploy_extra_log_message_to_text($data['message']);
+      }
+      return $text;
+    }
+  }
+}
+

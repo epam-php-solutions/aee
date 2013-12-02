@@ -146,6 +146,16 @@ function deploy_extra_log_views_data() {
     ),
   );
 
+  // Data Message
+  $data['deploy_extra_import_log']['data_message'] = array(
+    'title' => t('Data Message'),
+    'help' => t('Complementary message from data field'),
+    'field' => array(
+      'handler' => 'deploy_extra_log_handler_data_message',
+      'click sortable' => TRUE,
+    ),
+  );
+
   $data['deploy_extra_import_log']['link'] = array(
     'field' => array(
       'title' => t('Link'),
@@ -297,14 +307,14 @@ function deploy_extra_log_views_default_views() {
   $handler->display->display_options['fields']['timestamp']['table'] = 'deploy_extra_import_log';
   $handler->display->display_options['fields']['timestamp']['field'] = 'timestamp';
   $handler->display->display_options['fields']['timestamp']['date_format'] = 'long';
-  /* Field: Deploy Extra: Log Message */
-  $handler->display->display_options['fields']['message']['id'] = 'message';
-  $handler->display->display_options['fields']['message']['table'] = 'deploy_extra_import_log';
-  $handler->display->display_options['fields']['message']['field'] = 'message';
   /* Field: Deploy Extra: Link */
   $handler->display->display_options['fields']['link']['id'] = 'link';
   $handler->display->display_options['fields']['link']['table'] = 'deploy_extra_import_log';
   $handler->display->display_options['fields']['link']['field'] = 'link';
+  /* Field: Deploy Extra: Data Message */
+  $handler->display->display_options['fields']['data_message']['id'] = 'data_message';
+  $handler->display->display_options['fields']['data_message']['table'] = 'deploy_extra_import_log';
+  $handler->display->display_options['fields']['data_message']['field'] = 'data_message';
   /* Filter criterion: Deploy Extra: Deployment UUID */
   $handler->display->display_options['filters']['deployment_uuid']['id'] = 'deployment_uuid';
   $handler->display->display_options['filters']['deployment_uuid']['table'] = 'deploy_extra_import_log';
@@ -424,7 +434,6 @@ function deploy_extra_log_views_default_views() {
     1 => 0,
     11 => 0,
   );
-
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
