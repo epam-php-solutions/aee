@@ -68,7 +68,6 @@ function deploy_extra_log_deploy_extra_import_complete($entity_type, $entity, $u
   _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, $status);
 }
 
-
 /**
  * Helper function.
  * Check whether the import supports advanced logging.
