@@ -89,7 +89,8 @@ function deploy_extra_import_log($deployment_key, $uuid, $entity_type, $messages
 /*
  * Structure errors Logging system.
  */
-function deploy_extra_import_check($entity_type, $uuid, $entity, $deployment_key) {
+function deploy_extra_log_import_check($entity_type, $uuid, $entity, $config) {
+  $deployment_key = $config['deployment_key'];
   $vuuid = deploy_extra_get_vuuid_from_entity($entity, $entity_type);
 
   // Perform general checks for entity.
@@ -98,15 +99,8 @@ function deploy_extra_import_check($entity_type, $uuid, $entity, $deployment_key
   // Make an entity local.
   entity_make_entity_local($entity_type, $entity);
 
-  // Obtain a list of available entity types on the site.
-  $entities = entity_get_info();
-
-  foreach ($entities as $entity_name => $entity_instance) {
-    $errors_messages = module_invoke($entity_name, 'deploy_extra_check_structure', $entity_type, $entity);
-    if (!empty($errors_messages)) {
-      $messages = array_merge_recursive($messages = array(), $errors_messages);
-    }
-  }
+  // Checking structure.
+  $messages += module_invoke_all('deploy_extra_check_structure', $entity_type, $entity);
 
   // Let other modules alter messages for this entity.
   drupal_alter('deploy_extra_check_structure', $messages, $entity_type, $entity);
@@ -216,6 +210,17 @@ function node_deploy_extra_check_structure($entity_type, $entity) {
 
     return $messages;
   }
+}
+
+/**
+ * Implements hook_deploy_extra_check_field_structure().
+ */
+function taxonomy_field_deploy_extra_check_field_structure($entity_type, $entity, $field, $instance, $langcode, $items) {
+  $context  = array('context' => DEPLOY_EXTRA_LOG_TRANSLATE_CONTEXT);
+  $messages = array();
+
+
+  return $messages;
 }
 
 /*

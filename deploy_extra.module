@@ -14,6 +14,7 @@ define('DEPLOY_EXTRA_IMPORT_STATUS_UPDATED', 2);
 define('DEPLOY_EXTRA_IMPORT_STATUS_SKIPPED', 3);
 define('DEPLOY_EXTRA_IMPORT_STATUS_TEST_MODE', 4);
 define('DEPLOY_EXTRA_IMPORT_STATUS_FAILED', 5);
+define('DEPLOY_EXTRA_IMPORT_DEFAULT_CALLBACK', 'deploy_extra_import_entity_save');
 
 /**
  * Include the services hook implementations.

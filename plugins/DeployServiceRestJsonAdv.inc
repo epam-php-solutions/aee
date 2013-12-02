@@ -65,7 +65,7 @@ class DeployServiceRestJsonAdv extends DeployServiceRest {
     );
 
     // Let other modules have their say.
-    drupal_alter(__CLASS__ . '_form', $form, $form_state, $this->config);
+    drupal_alter('deploy_extra_config_form', $form, $form_state, $this->config);
 
     return $form;
   }
