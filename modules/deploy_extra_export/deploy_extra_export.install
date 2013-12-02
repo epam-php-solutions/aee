@@ -1,0 +1,89 @@
+<?php
+
+/**
+ * @file
+ * The Deploy Extra Export module install hooks.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function deploy_extra_export_install() {
+  // Initialize endpoint array.
+  $endpoint = array(
+    'name'  => 'deploy_extra_export_endpoint',
+    'title' => 'Deploy Extra Export endpoint',
+    'description' => 'Required endpoint for DeployProcessorForm',
+    'debug' => 0,
+    'authenticator_plugin' => 'DeployAuthenticatorSession',
+    'authenticator_config' => array(
+      'username' => '',
+      'password' => '',
+    ),
+    'service_plugin' => 'DeployServiceRestJSON',
+    'service_config' => array(
+      'url' => '',
+    ),
+  );
+
+  // Try to add endpoint to endpoints table.
+  $transaction = db_transaction();
+  try {
+    drupal_write_record('deploy_endpoints', $endpoint);
+  }
+  catch(Exception $e) {
+    $transaction->rollback();
+    watchdog('deploy_extra_export', $e->getMessage(), WATCHDOG_CRITICAL);
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function deploy_extra_export_uninstall() {
+  db_delete('deploy_endpoints')
+    ->condition('name', 'deploy_extra_export_endpoint')
+    ->execute();
+
+  $plans = db_select('deploy_plans', 'dp')
+    ->fields('dp', array('name'))
+    ->condition('dp.processor_plugin', 'DeployProcessorForm')
+    ->execute()
+    ->fetchAll();
+
+  $plans_names = array();
+
+  if (!empty($plans)) {
+    foreach ($plans as $plan) {
+      $plans_names[] = $plan['name'];
+    }
+  }
+
+  if (!empty($plans_names)) {
+    $uuids = db_select('deploy_deployments', 'dd')
+      ->fields('dd', array('uuid'))
+      ->condition('dd.plan_name', $plans_names, 'IN')
+      ->execute()
+      ->fetchAll();
+
+    $uuids_arr = array();
+
+    if (!empty($uuids)) {
+      foreach ($uuids as $uuid) {
+        $uuids_arr[] = $uuid['uuid'];
+      }
+
+      db_delete('deploy_log')
+        ->condition('uuid', $uuids_arr, 'IN')
+        ->execute();
+    }
+
+    db_delete('deploy_plans')
+      ->condition('name', $plans_names, 'IN')
+      ->execute();
+
+    db_delete('deploy_plans')
+      ->condition('name', $plans_names, 'IN')
+      ->execute();
+  }
+}

@@ -1,0 +1,10 @@
+name = Deploy Extra Export
+description = Export entities data to form or to file with.
+package = Deployment
+core = 7.x
+
+dependencies[] = deploy_extra
+dependencies[] = deploy_extra_formats
+
+;Plugins.
+files[] = plugins/DeployProcessorForm.inc

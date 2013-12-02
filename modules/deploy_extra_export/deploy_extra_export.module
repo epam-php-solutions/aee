@@ -1,0 +1,92 @@
+<?php
+
+/**
+ * @file
+ * This is the file description for Deploy Extra IEX module.
+ */
+
+// Translation context.
+define('DEPLOY_EXTRA_EXPORT_TRANSLATE_CONTEXT', 'deploy_extra_export');
+
+// Include needed files.
+module_load_include('inc', 'deploy_extra_export', 'deploy_extra_export.core');
+module_load_include('inc', 'deploy_extra_export', 'deploy_extra_export.batch');
+
+/**
+ * Implements hook_permission().
+ */
+function deploy_extra_export_permission() {
+  return array(
+    'administer deploy export' => array(
+      'title' => t('Administer export deployments'),
+      'description' => t('Export and import data of entities with form or file.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function deploy_extra_export_menu() {
+  $items['admin/structure/deploy/export/%uuid'] = array(
+    'title' => 'Export entities to form',
+    'page callback'  => 'drupal_get_form',
+    'page arguments' => array('deploy_extra_export_entity_export_form', 4),
+    'access arguments' => array('administer deploy export'),
+    'file' => 'deploy_extra_export.admin.inc',
+  );
+
+  $items['ajax/deploy/download/%uuid/%'] = array(
+    'page callback'  => 'deploy_extra_export_ajax_deploy_download',
+    'page arguments' => array(3, 4),
+    'delivery callback' => 'ajax_deliver',
+    'access arguments' => array('administer deploy export'),
+    'type' => MENU_CALLBACK,
+    'file' => 'deploy_extra_export.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *   Alter the form and add DeployProcessorForm to table of processors.
+ */
+function deploy_extra_export_form_ctools_export_ui_edit_item_wizard_form_alter(&$form, &$form_state, $form_id) {
+  // Use in translation context.
+  $context = array('context' => DEPLOY_EXTRA_EXPORT_TRANSLATE_CONTEXT);
+
+  if (isset($form['aggregator_plugin'])) {
+    // Add DeployProcessorForm to list of processors.
+    $form['fieldset']['processor_plugin']['#options']['DeployProcessorForm'] = array(
+      'name' => t('Form Processor', array(), $context),
+      'description' => t('All entities are processed with the Batch API and output in form or file.'),
+    );
+
+    // Add after build function.
+    $form['fieldset']['endpoints']['#after_build'] = array('deploy_extra_export_endpoints_after_build');
+
+    // Add validate function.
+    $form['fieldset']['endpoints']['#element_validate'][] = 'deploy_extra_export_validate_endpoints';
+  }
+}
+
+/**
+ * Implements hook_deploy_extra_formats_methods().
+ */
+function deploy_extra_export_deploy_extra_formats_methods() {
+  return array(
+    'form' => array(
+      'export_label' => 'Push to form',
+      'export_callback' => 'deploy_extra_export_form_export',
+    ),
+    'file_for_downloading' => array(
+      'export_label' => 'Push to browser for downloading',
+      'export_callback' => 'deploy_extra_export_file_download_export',
+    ),
+    'file' => array(
+      'export_label' => 'Push to destination on server folder',
+      'export_callback' => 'deploy_extra_export_file_export',
+    ),
+  );
+}
