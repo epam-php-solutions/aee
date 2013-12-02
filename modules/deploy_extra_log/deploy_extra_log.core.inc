@@ -234,10 +234,10 @@ function deploy_extra_log_message_to_text($data) {
 /**
  * @param int $status
  *
- * @return string of status or False
+ * @return array of status/statuses or False
  */
 
-function _deploy_extra_log_status_to_string ($status) {
+function _deploy_extra_log_status_to_string ($status = NULL) {
 
   $statuses = array(
     DEPLOY_EXTRA_IMPORT_STATUS_PROCESSED => t('Processed'),
@@ -248,8 +248,12 @@ function _deploy_extra_log_status_to_string ($status) {
     DEPLOY_EXTRA_IMPORT_STATUS_FAILED    => t('Failed'),
   );
 
+  if(!isset($status)) {
+    return($statuses);
+  }
+
   if(array_key_exists($status, $statuses)) {
-    return $statuses[$status];
+    return array($status => $statuses[$status]);
   }
 
   return FALSE;

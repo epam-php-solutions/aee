@@ -11,10 +11,11 @@
 class deploy_extra_log_handler_status_field extends views_handler_field {
 
   function render($values) {
-    $value = _deploy_extra_log_status_to_string($values->{$this->field_alias});
+    $status_id = $values->{$this->field_alias};
+    $status = _deploy_extra_log_status_to_string($status_id);
+    $value = $status[$status_id];
     return $value;
   }
-
 }
 
 /**
@@ -71,5 +72,42 @@ class deploy_extra_log_handler_field_entity_link extends views_handler_field {
       }
     }
   }
-
 }
+
+/**
+ * Filter by entity type.
+ */
+class deploy_extra_log_handler_filter_entity_type extends views_handler_filter_in_operator {
+  function get_value_options() {
+    if (!isset($this->value_options)) {
+      $this->value_title = t('Entity types');
+      $types = entity_get_info();
+      $options = array();
+      foreach ($types as $type => $info) {
+        $options[$type] = t($info['label']);
+      }
+      unset($options['taxonomy_vocabulary']);
+      asort($options);
+      $this->value_options = $options;
+    }
+  }
+}
+
+/**
+ * Filter by status field.
+ */
+class deploy_extra_log_handler_filter_status_field extends views_handler_filter_in_operator {
+  function get_value_options() {
+    if (!isset($this->value_options)) {
+      $this->value_title = t('Status');
+      $types = _deploy_extra_log_status_to_string();
+      $options = array();
+      foreach ($types as $status_id => $status) {
+        $options[$status_id] = $status;
+      }
+      asort($options);
+      $this->value_options = $options;
+    }
+  }
+}
+
