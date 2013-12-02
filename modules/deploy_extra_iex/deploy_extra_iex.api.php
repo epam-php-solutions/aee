@@ -6,17 +6,6 @@
  */
 
 /**
- * Allow modules to modify an entity before it gets exported.
- *
- * @param $entity
- *   The entity being exported.
- */
-// @TODO move to deploy_extra api.
-function hook_deploy_extra_export_entity_alter(&$entity) {
-
-}
-
-/**
  * Add export methods.
  *
  * This hook add export methods to settings form for DeployPorocessorForm and also

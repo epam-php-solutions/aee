@@ -94,13 +94,13 @@ function deploy_extra_iex_file_export($success, $results) {
     mkdir($dir);
   }
 
-  $filename = $config['plan_name'] . '_' . date("d-m-Y(H.i)") . '.txt';
+  $filename = $results['filename'];
   $file = fopen($dir . $filename, 'a+');
   fwrite($file, $cache->data);
 
   // Use in translation context.
   $context = array('context' => DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT);
-  $suffix = t('File name is !file', array('!file' => l($filename, 'ajax/deploy/download/' . $uuid)), $context);
+  $suffix = t('File name is !file', array('!file' => l($filename, 'ajax/deploy/download/' . $uuid . '/' . $filename)), $context);
 
   // Set message.
   deploy_extra_iex_return_message($uuid, $success, $suffix);
@@ -119,8 +119,9 @@ function deploy_extra_iex_file_download_export($success, $results) {
   // Use in translation context.
   $context = array('context' => DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT);
 
-  $uuid  = $results['uuid'];
-  $file_link = l('export_entities_data.txt', 'ajax/deploy/download/' . $uuid);
+  $uuid = $results['uuid'];
+  $filename = $results['filename'];
+  $file_link = l($filename, 'ajax/deploy/download/' . $uuid . '/' . $filename);
   $suffix = t('You can download it here !file', array('!file' => $file_link), $context);
 
   // Set message.

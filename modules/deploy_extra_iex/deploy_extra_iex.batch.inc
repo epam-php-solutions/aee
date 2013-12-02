@@ -46,6 +46,7 @@ function deploy_extra_iex_export_batch_finished_operation($success, $results, $o
 
     // If exist method, call the export callback.
     if (isset($methods[$export_method])) {
+      $results['filename'] = $processor_config['plan_name'] . '_' . date('d-m-Y(H.i)') . '.txt';
       $function = $methods[$export_method]['export_callback'];
       $function($success, $results);
     }
