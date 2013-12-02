@@ -1,0 +1,7 @@
+name = Deploy Extra Import
+description = Import entities data to form or to file.
+package = Deployment
+core = 7.x
+
+dependencies[] = uuid
+dependencies[] = deploy_extra_formats

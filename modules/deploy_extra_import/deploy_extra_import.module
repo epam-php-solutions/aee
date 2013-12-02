@@ -1,0 +1,62 @@
+<?php
+
+/**
+ * @file
+ * This is the file description for Deploy Extra Import module.
+ */
+
+// Translation context.
+define('DEPLOY_EXTRA_IMPORT_TRANSLATE_CONTEXT', 'deploy_extra_import');
+
+// Include needed files.
+module_load_include('inc', 'deploy_extra_import', 'deploy_extra_import.batch');
+
+/**
+ * Implements hook_permission().
+ */
+function deploy_extra_import_permission() {
+  return array(
+    'administer deploy import' => array(
+      'title' => t('Administer import deployments'),
+      'description' => t('Import data of entities with form or file.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function deploy_extra_import_menu() {
+  $items['admin/structure/deploy/import'] = array(
+    'title' => 'Import data of entities',
+    'description' => 'Import entities from file or form.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('deploy_extra_import_entity_import_form'),
+    'access arguments' => array('administer deploy import'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 50,
+    'file' => 'deploy_extra_import.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_deploy_extra_import_methods().
+ */
+function deploy_extra_import_deploy_extra_import_methods() {
+  return array(
+    'form' => array(
+      'import_label' => 'Import from form',
+      'import_callback' => 'deploy_extra_import_form_import',
+    ),
+    'file_for_downloading' => array(
+      'import_label' => 'Import from file directory on server.',
+      'import_callback' => 'deploy_extra_import_file_download_import',
+    ),
+    'file' => array(
+      'import_label' => 'Import from file',
+      'import_callback' => 'deploy_extra_import_file_import',
+    ),
+  );
+}
