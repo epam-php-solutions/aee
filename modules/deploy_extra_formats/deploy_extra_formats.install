@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * @file
+ * The Deploy Extra Formats module install hooks.
+ */
+
+/**
+ * Implements hook_requirements().
+ */
+function deploy_extra_formats_requirements($phase) {
+  $requirements = array();
+
+  if (in_array($phase, array('runtime', 'install'))) {
+    $t = get_t();
+    $library = libraries_detect('spyc');
+
+    if (empty($library['installed'])) {
+      $spyc_link = l($t('SPYC library'), $library['download url']);
+      $requirements['spyc_library'] = array(
+        'title'    => $t('Spyc Library'),
+        'severity' => REQUIREMENT_ERROR,
+        'description' => $t('You need to download the !spyc, extract the archive and place in the %path directory on your server.', array(
+          '!spyc' => $spyc_link,
+          '%path' => 'sites/all/libraries')
+        ),
+      );
+    }
+  }
+
+  return $requirements;
+}

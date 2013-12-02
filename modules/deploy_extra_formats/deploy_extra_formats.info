@@ -1,0 +1,13 @@
+name = Deploy Extra Formats
+description = Provides export|import formats.
+package = Deployment
+core = 7.x
+
+dependencies[] = ctools
+
+;Export formats plugins.
+files[] = plugins/formats/DeployExtraJSON.inc
+files[] = plugins/formats/DeployExtraYaml.inc
+
+;Includes
+files[] = includes/DeployExtraFormat.inc

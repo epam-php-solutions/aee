@@ -1,0 +1,53 @@
+<?php
+
+/**
+ * @file
+ * This is the file description for Deploy Extra Formats module.
+ */
+
+// Translation context.
+define('DEPLOY_EXTRA_FORMATS_TRANSLATE_CONTEXT', 'deploy_extra_formats');
+
+// Include needed files.
+module_load_include('inc', 'deploy_extra_formats', 'deploy_extra_formats.core');
+
+/**
+ * Implements hook_ctools_plugin_type().
+ *   Provides export formats.
+ */
+function deploy_extra_formats_ctools_plugin_type() {
+  return array(
+    'formats' => array(
+      'cache' => TRUE,
+      'use hooks' => TRUE,
+      'classes'   => array('handler'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_deploy_extra_formats_formats().
+ */
+function deploy_extra_formats_deploy_extra_formats_formats() {
+  $path = drupal_get_path('module', 'deploy_extra_formats') . '/plugins/formats';
+  return array(
+    'DeployExtraJSON' => array(
+      'name' => 'JSON',
+      'description' => 'Provides json export format.',
+      'handler' => array(
+        'class' => 'DeployExtraJSON',
+        'file'  => 'DeployExtraJSON.inc',
+        'path'  => $path,
+      ),
+    ),
+    'DeployExtraYaml' => array(
+      'name' => 'Yaml',
+      'description' => 'Provides yaml export format.',
+      'handler' => array(
+        'class' => 'DeployExtraYaml',
+        'file'  => 'DeployExtraYaml.inc',
+        'path'  => $path,
+      ),
+    ),
+  );
+}
