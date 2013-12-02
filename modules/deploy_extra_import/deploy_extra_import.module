@@ -42,9 +42,9 @@ function deploy_extra_import_menu() {
 }
 
 /**
- * Implements hook_deploy_extra_import_methods().
+ * Implements hook_deploy_extra_formats_methods().
  */
-function deploy_extra_import_deploy_extra_import_methods() {
+function deploy_extra_import_deploy_extra_formats_methods() {
   return array(
     'form' => array(
       'import_label' => 'Import from form',

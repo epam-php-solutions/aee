@@ -191,7 +191,7 @@ function deploy_extra_import_entity_import_form_validate($form, &$form_state) {
   }
 
   // Load export formatter and decode the data of entities.
-  $formatter = deploy_extra_iex_get_export_formats_plugins($format);
+  $formatter = deploy_extra_formats_get_formats_plugins($format);
   $plugin = new $formatter['handler']['class'];
   $data = $plugin->decodeData($data);
   $lock_name = !empty($data['processor_config']['lock_name']) ? $data['processor_config']['lock_name'] : NULL;
@@ -209,7 +209,7 @@ function deploy_extra_import_entity_import_form_validate($form, &$form_state) {
   }
 
   // Pass data to submission function.
-  $form_state['deploy_extra_iex_import_data'] = $data;
+  $form_state['deploy_extra_import_data'] = $data;
 }
 
 /**
@@ -228,7 +228,7 @@ function deploy_extra_import_entity_import_form_submit($form, $form_state) {
   }
 
   // Import data.
-  $data = $form_state['deploy_extra_iex_import_data'];
+  $data = $form_state['deploy_extra_import_data'];
 
   // Initialize operations array.
   $operations = array();
