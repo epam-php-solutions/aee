@@ -30,15 +30,16 @@ function deploy_extra_import_entity_import_form($form, &$form_state) {
   $options = deploy_extra_formats_get_formats_options($form_state, 'configImportForm');
 
   // If deploy_extra_log is enable, show the additional settings.
-  if (module_exists('deploy_extra_log')) {
+  $import_config = array();
+
+  // Let other modules have their say.
+  drupal_alter('deploy_extra_config_form', $form, $form_state, $import_config);
+
+  if ($import_config) {
     $form['import']['import_config'] = array(
       '#type'  => 'checkboxes',
       '#title' => t('Configuration of import', array(), $context),
-      '#options' => array(
-        'adv_log' => t('Use advanced log', array(), $context),
-        'skip'    => t('Skip the existing entity', array(), $context),
-        'tmode'   => t('Use test mode', array(), $context),
-      ),
+      '#options' => $import_config,
     );
   }
 
@@ -173,7 +174,7 @@ function deploy_extra_import_entity_import_form_validate($form, &$form_state) {
   $data = '';
 
   // Invoke all methods.
-  $methods = module_invoke_all('deploy_extra_import_methods');
+  $methods = module_invoke_all('deploy_extra_formats_methods');
 
   // Define the import callback.
   $function = isset($methods[$method]) ? $methods[$method]['import_callback'] : '';
@@ -233,6 +234,13 @@ function deploy_extra_import_entity_import_form_submit($form, $form_state) {
   // Initialize operations array.
   $operations = array();
 
+  // Default function name for import entity.
+  $import_function = 'deploy_extra_import_entity_update';
+
+  if (!empty($import_config) && function_exists('deloy_extra_import_entity')) {
+    $import_function = 'deloy_extra_import_entity';
+  }
+
   if (!empty($data['entities'])) {
     foreach($data['entities'] as $entity) {
       // Add deployment key to configuration array.
@@ -247,7 +255,7 @@ function deploy_extra_import_entity_import_form_submit($form, $form_state) {
       );
 
       // Add import operation and pass the arguments to it.
-      $operations[] = array('deloy_extra_import_entity', $options);
+      $operations[] = array($import_function, $options);
     }
   }
 
@@ -260,6 +268,29 @@ function deploy_extra_import_entity_import_form_submit($form, $form_state) {
 
   batch_set($batch);
   batch_process('admin/structure/deploy/import');
+}
+
+/**
+ * Callback for the 'update' method.
+ *
+ * @see entity_uuid_save()
+ */
+function deploy_extra_import_entity_update($entity_type, $uuid, $entity, $config) {
+  try {
+    $controller = entity_get_controller($entity_type);
+    if ($controller instanceof EntityAPIControllerInterface) {
+      $entity = $controller->create($entity);
+    }
+    else {
+      $entity = (object) $entity;
+    }
+    entity_uuid_save($entity_type, $entity);
+    return $entity;
+  }
+  catch (Exception $exception) {
+    watchdog_exception('deploy_extra_import', $exception);
+    return services_error($exception, 406, $entity);
+  }
 }
 
 /**
