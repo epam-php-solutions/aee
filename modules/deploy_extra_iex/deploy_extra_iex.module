@@ -47,9 +47,9 @@ function deploy_extra_iex_menu() {
     'file' => 'deploy_extra_iex.admin.inc',
   );
 
-  $items['ajax/deploy/download/%uuid'] = array(
+  $items['ajax/deploy/download/%uuid/%'] = array(
     'page callback'  => 'deploy_extra_iex_ajax_deploy_download',
-    'page arguments' => array(3),
+    'page arguments' => array(3, 4),
     'delivery callback' => 'ajax_deliver',
     'access arguments' => array('administer deploy iex'),
     'type' => MENU_CALLBACK,

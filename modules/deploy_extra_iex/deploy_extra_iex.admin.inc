@@ -197,7 +197,7 @@ function deploy_extra_iex_entity_import_form_validate($form, &$form_state) {
   $lock_name = !empty($data['processor_config']['lock_name']) ? $data['processor_config']['lock_name'] : NULL;
 
   // If have empty $lock_name, set the error and reload the page.
-  if (empty($lock_name)) {
+  if (!$lock_name) {
     drupal_set_message(t('You have incorrect data of entities', array(), $context), 'error');
     $form_state['rebuild'] = TRUE;
     return;
@@ -282,11 +282,13 @@ function deploy_extra_iex_entity_export_form($form, $form_state, $uuid = NULL) {
  *
  * @param $uuid
  *   Deployment key.
+ *
+ * @param $filename
+ *   Filename for downloading.
  */
-function deploy_extra_iex_ajax_deploy_download($uuid) {
+function deploy_extra_iex_ajax_deploy_download($uuid, $filename) {
   $cache = deploy_extra_iex_get_cache($uuid);
-  $content  = $cache->data;
-  $filename = 'export_entities_data.txt';
+  $content = $cache->data;
 
   // Send headers.
   header('Content-Description: File Transfer');
