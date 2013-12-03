@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Services functions for the deploy_extra module.
+ */
+
+/**
  * Implements hook_services_resources_alter().
  *
  * Alter update operation callback, to make use the additional deploy modes when
@@ -57,8 +62,7 @@ function _deploy_extra_services_update($entity_type, $uuid, $entity) {
       }
       entity_uuid_save($entity_type, $entity);
       return $entity;
-    }
-    catch (Exception $exception) {
+    } catch (Exception $exception) {
       watchdog_exception('uuid_services', $exception);
       return services_error($exception, 406, $entity);
     }

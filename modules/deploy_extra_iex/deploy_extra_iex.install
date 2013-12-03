@@ -11,7 +11,7 @@
 function deploy_extra_iex_install() {
   // Initialize endpoint array.
   $endpoint = array(
-    'name'  => 'deploy_extra_iex_endpoint',
+    'name' => 'deploy_extra_iex_endpoint',
     'title' => 'Deploy Extra IEX endpoint',
     'description' => 'Required endpoint for DeployProcessorForm',
     'debug' => 0,
@@ -30,8 +30,7 @@ function deploy_extra_iex_install() {
   $transaction = db_transaction();
   try {
     drupal_write_record('deploy_extra_iex_endpoint', $endpoint);
-  }
-  catch(Exception $e) {
+  } catch (Exception $e) {
     $transaction->rollback();
     watchdog('deploy_extra_iex', $e->getMessage(), WATCHDOG_CRITICAL);
   }
@@ -59,11 +58,12 @@ function deploy_extra_iex_requirements($phase) {
     if (empty($library['installed'])) {
       $spyc_link = l($t('SPYC library'), $library['download url']);
       $requirements['spyc_library'] = array(
-        'title'    => $t('Spyc Library'),
+        'title' => $t('Spyc Library'),
         'severity' => REQUIREMENT_ERROR,
         'description' => $t('You need to download the !spyc, extract the archive and place in the %path directory on your server.', array(
-          '!spyc' => $spyc_link,
-          '%path' => 'sites/all/libraries')
+            '!spyc' => $spyc_link,
+            '%path' => 'sites/all/libraries'
+          )
         ),
       );
     }

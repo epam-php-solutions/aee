@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * @file
+ * Contains DeployProcessorForm class.
  * Processor class using the Batch API.
  */
 class DeployProcessorForm extends DeployProcessorMemory {
@@ -24,7 +26,7 @@ class DeployProcessorForm extends DeployProcessorMemory {
       $this->data[] = $entity;
 
       // Add deployment key to entity metadata.
-      if(isset($entity->__metadata)) {
+      if (isset($entity->__metadata)) {
         $entity->__metadata['deploy_extra']['deployment_key'] = $deployment_key;
       }
 
@@ -47,10 +49,10 @@ class DeployProcessorForm extends DeployProcessorMemory {
     );
 
     // Add batch export operation for passing deploy info to results array.
-    $this->operations[]  = array('deploy_extra_iex_pass_deploy_info', $options);
+    $this->operations[] = array('deploy_extra_iex_pass_deploy_info', $options);
 
     foreach ($this->data as $entity) {
-      $this->operations[]  = array('deploy_extra_iex_prepare_data_entities', array($entity));
+      $this->operations[] = array('deploy_extra_iex_prepare_data_entities', array($entity));
     }
   }
 
@@ -58,11 +60,11 @@ class DeployProcessorForm extends DeployProcessorMemory {
     $this->processOperations($operations);
     $batch = array(
       'title' => t('Deploying %plan', array('%plan' => $this->aggregator->plan->title)),
-      'operations'   => $this->operations,
+      'operations' => $this->operations,
       'init_message' => t('Exporting Batch is starting.'),
       'progress_message' => t('Processed @current out of @total.'),
-      'error_message'    => t('Exporting Batch has encountered an error.'),
-      'finished'         => 'deploy_extra_iex_export_batch_finished_operation',
+      'error_message' => t('Exporting Batch has encountered an error.'),
+      'finished' => 'deploy_extra_iex_export_batch_finished_operation',
     );
     batch_set($batch);
     batch_process($this->config['url']);
@@ -83,17 +85,17 @@ class DeployProcessorForm extends DeployProcessorMemory {
 
     // Export methods (form, file & etc.).
     $output['export_method'] = array(
-      '#type'  => 'radios',
+      '#type' => 'radios',
       '#title' => t('Choose the export method', array(), $context),
-      '#options'  => $methods,
+      '#options' => $methods,
       '#required' => TRUE,
     );
 
     // Destination folder, when save the export file on server.
     $output['destination'] = array(
-      '#type'  => 'textfield',
+      '#type' => 'textfield',
       '#title' => t('Path to folder', array(), $context),
-      '#field_prefix'  => 'default/files/',
+      '#field_prefix' => 'default/files/',
       '#default_value' => isset($this->config['destination']) ? $this->config['destination'] : '',
       '#description' => t('The destination folder, where deploy files will located.', array(), $context),
       '#states' => array(
@@ -107,9 +109,9 @@ class DeployProcessorForm extends DeployProcessorMemory {
 
     // Export formats (JSON, YAML & etc.).
     $output['export_format'] = array(
-      '#type'  => 'radios',
+      '#type' => 'radios',
       '#title' => t('Choose the export format', array(), $context),
-      '#options'  => $options['plugins_formats'],
+      '#options' => $options['plugins_formats'],
       '#required' => TRUE,
     );
 

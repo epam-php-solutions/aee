@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Install file for the deploy_extra module.
+ */
+
+/**
  * Implements hook_enable().
  */
 function deploy_extra_enable() {

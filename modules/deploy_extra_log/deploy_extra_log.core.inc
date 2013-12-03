@@ -41,12 +41,12 @@ function _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status,
     'timestamp' => time(),
   );
 
-  if(is_array($data)) {
+  if (is_array($data)) {
 
     // Convert an array of log messages into a plain text.
     $message = deploy_extra_log_message_to_text($data);
 
-    $fields['data']    = !empty($data) ? serialize($data) : NULL;
+    $fields['data'] = !empty($data) ? serialize($data) : NULL;
     $fields['message'] = $message;
   }
 
@@ -71,7 +71,7 @@ function deploy_extra_import_log_status($deployment_key, $uuid, $entity_type, $s
     ->condition('entity_type', $entity_type)
     ->condition('entity_uuid', $uuid);
 
-  if(!empty($entity_vuuid)) {
+  if (!empty($entity_vuuid)) {
     $update->condition('entity_vuuid', $entity_vuuid);
   }
 
@@ -115,7 +115,7 @@ function deploy_extra_log_import_check($entity_type, $uuid, $entity, $config) {
  * These checks do not depend on the type of entity.
  */
 function deploy_extra_import_check_common($entity_type, $uuid, $entity, $deployment_key) {
-  $context  = array('context' => DEPLOY_EXTRA_LOG_TRANSLATE_CONTEXT);
+  $context = array('context' => DEPLOY_EXTRA_LOG_TRANSLATE_CONTEXT);
   $messages = array();
 
   // Define message type.
@@ -165,7 +165,7 @@ function deploy_extra_import_check_common($entity_type, $uuid, $entity, $deploym
  */
 function field_deploy_extra_check_structure($entity_type, $entity) {
   $messages = array();
-  list(,, $bundle_name) = entity_extract_ids($entity_type, $entity);
+  list(, , $bundle_name) = entity_extract_ids($entity_type, $entity);
   $instances = field_info_instances($entity_type, $bundle_name);
 
   foreach ($instances as $field_name => $instance) {
@@ -217,7 +217,7 @@ function node_deploy_extra_check_structure($entity_type, $entity) {
  * Implements hook_deploy_extra_check_field_structure().
  */
 function taxonomy_field_deploy_extra_check_field_structure($entity_type, $entity, $field, $instance, $langcode, $items) {
-  $context  = array('context' => DEPLOY_EXTRA_LOG_TRANSLATE_CONTEXT);
+  $context = array('context' => DEPLOY_EXTRA_LOG_TRANSLATE_CONTEXT);
   $messages = array();
 
 
@@ -243,22 +243,22 @@ function deploy_extra_log_message_to_text($data) {
  * @return array of status/statuses or False
  */
 
-function _deploy_extra_log_status_to_string ($status = NULL) {
+function _deploy_extra_log_status_to_string($status = NULL) {
 
   $statuses = array(
     DEPLOY_EXTRA_IMPORT_STATUS_PROCESSED => t('Processed'),
-    DEPLOY_EXTRA_IMPORT_STATUS_SAVED     => t('Saved'),
-    DEPLOY_EXTRA_IMPORT_STATUS_UPDATED   => t('Updated'),
-    DEPLOY_EXTRA_IMPORT_STATUS_SKIPPED   => t('Skipped'),
+    DEPLOY_EXTRA_IMPORT_STATUS_SAVED => t('Saved'),
+    DEPLOY_EXTRA_IMPORT_STATUS_UPDATED => t('Updated'),
+    DEPLOY_EXTRA_IMPORT_STATUS_SKIPPED => t('Skipped'),
     DEPLOY_EXTRA_IMPORT_STATUS_TEST_MODE => t('Test Mode'),
-    DEPLOY_EXTRA_IMPORT_STATUS_FAILED    => t('Failed'),
+    DEPLOY_EXTRA_IMPORT_STATUS_FAILED => t('Failed'),
   );
 
-  if(!isset($status)) {
-    return($statuses);
+  if (!isset($status)) {
+    return ($statuses);
   }
 
-  if(array_key_exists($status, $statuses)) {
+  if (array_key_exists($status, $statuses)) {
     return array($status => $statuses[$status]);
   }
 

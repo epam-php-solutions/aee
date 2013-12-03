@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * @file
+ * Contains DeployServiceRestJsonAdv class.
  * Class for deploying to a REST server using JSON
  * TODO add description
  */
@@ -70,16 +72,16 @@ class DeployServiceRestJsonAdv extends DeployServiceRest {
     return $form;
   }
 
-  public function fillEntityMetadata ($entity) {
+  public function fillEntityMetadata($entity) {
     if (isset($entity->__metadata)) {
-      $metadata = &$entity->__metadata;
+      $metadata = & $entity->__metadata;
       $config = $this->config;
 
       // Add in the Metadata only those properties
       // that are defined in the defaultConfig() method.
       $to_metadata = $this->defaultConfig();
       foreach ($to_metadata as $property => $value) {
-        if(isset($config[$property])) {
+        if (isset($config[$property])) {
           $metadata['deploy_extra'][$property] = $config[$property];
         }
       }

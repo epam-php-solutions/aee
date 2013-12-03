@@ -61,7 +61,7 @@ class deploy_extra_log_handler_field_entity_link extends views_handler_field {
 
     $ids = entity_get_id_by_uuid($entity_type, array($entity_uuid));
 
-    if(!empty($ids)) {
+    if (!empty($ids)) {
       $id = reset($ids);
       $entity = entity_load_single($entity_type, $id);
       if (entity_access('view', $entity_type, $entity)) {
@@ -130,9 +130,9 @@ class deploy_extra_log_handler_data_message extends views_handler_field {
 
     $data = $this->get_value($values, 'data');
 
-    if(!empty($data)) {
+    if (!empty($data)) {
       $data = unserialize($data);
-      if(isset($data['message']) && !empty($data['message'])) {
+      if (isset($data['message']) && !empty($data['message'])) {
         $text = deploy_extra_log_message_to_text($data['message']);
       }
       return $text;

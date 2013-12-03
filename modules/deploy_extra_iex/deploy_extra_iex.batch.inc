@@ -31,10 +31,10 @@ function deploy_extra_iex_export_batch_finished_operation($success, $results, $o
     // Load export formatter and encode the data of entities.
     $formatter = deploy_extra_iex_get_export_formats_plugins($export_format);
     $class = new $formatter['handler']['class'];
-    $data  = $class->encodeData(
+    $data = $class->encodeData(
       array(
         'processor_config' => $processor_config,
-        'entities'  => $results['entities'],
+        'entities' => $results['entities'],
       )
     );
 
@@ -50,8 +50,7 @@ function deploy_extra_iex_export_batch_finished_operation($success, $results, $o
       $function = $methods[$export_method]['export_callback'];
       $function($success, $results);
     }
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     if (!empty($lock_name)) {
       lock_release($lock_name);
     }
@@ -76,7 +75,7 @@ function deploy_extra_iex_import_batch_finished_operation($success, $results, $o
   // Use in translation context.
   $context = array('context' => DEPLOY_EXTRA_IEX_TRANSLATE_CONTEXT);
 
-  $status  = $success ? 'status' : 'error';
+  $status = $success ? 'status' : 'error';
   $message = $success ? 'Import of entities has done successfully!' : 'Import of entities has failed';
 
   // Send the message.

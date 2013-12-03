@@ -68,8 +68,8 @@ function hook_deploy_extra_iex_export_formats() {
       'description' => 'Provides new export format.',
       'handler' => array(
         'class' => 'OwnPluginName',
-        'file'  => 'OwnPluginName.inc',
-        'path'  => $path,
+        'file' => 'OwnPluginName.inc',
+        'path' => $path,
       ),
     ),
   );

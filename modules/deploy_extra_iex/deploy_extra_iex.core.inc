@@ -64,7 +64,7 @@ function deploy_extra_iex_get_export_formats_plugins($id = NULL) {
  *    Array includes results and processor config.
  */
 function deploy_extra_iex_form_export($success, $results) {
-  $uuid  = $results['uuid'];
+  $uuid = $results['uuid'];
   // Set message.
   deploy_extra_iex_return_message($uuid, $success);
   drupal_goto('admin/structure/deploy/export/' . $uuid);
@@ -81,13 +81,13 @@ function deploy_extra_iex_form_export($success, $results) {
  *    Array includes results and processor config.
  */
 function deploy_extra_iex_file_export($success, $results) {
-  $uuid  = $results['uuid'];
-  $cid   = 'deploy_extra_iex_' . $uuid;
+  $uuid = $results['uuid'];
+  $cid = 'deploy_extra_iex_' . $uuid;
   $cache = cache_get($cid);
 
   $config = $results['processor_config'];
   $destination = trim($config['destination']);
-  $dir  = 'public://' . $destination . '/';
+  $dir = 'public://' . $destination . '/';
 
   // Check if directory is exist, if not - create it.
   if (!is_dir($dir)) {
@@ -181,7 +181,7 @@ function deploy_extra_iex_get_export_formats_options($form_state, $method) {
 
   // Fill the options array.
   if (!empty($formats)) {
-    foreach($formats as $format) {
+    foreach ($formats as $format) {
       $options['plugins_formats'][$format['handler']['class']] = $format['name'];
 
       // Initialize the plugin.

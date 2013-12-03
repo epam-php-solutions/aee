@@ -1,10 +1,15 @@
 <?php
 
+/**
+ * @file
+ * Contains DeployExtraYaml class.
+ */
+
 class DeployExtraYaml implements DeployExtraFormat {
   public function encodeData($data) {
     $this->loadSpyc();
-    foreach($data['entities'] as &$entity) {
-      $entity = (array)$entity;
+    foreach ($data['entities'] as &$entity) {
+      $entity = (array) $entity;
     }
     unset($entity);
     return Spyc::YAMLDump($data);

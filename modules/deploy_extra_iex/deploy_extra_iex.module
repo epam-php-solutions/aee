@@ -41,14 +41,14 @@ function deploy_extra_iex_menu() {
 
   $items['admin/structure/deploy/export/%uuid'] = array(
     'title' => 'Export entities to form',
-    'page callback'  => 'drupal_get_form',
+    'page callback' => 'drupal_get_form',
     'page arguments' => array('deploy_extra_iex_entity_export_form', 4),
     'access arguments' => array('administer deploy iex'),
     'file' => 'deploy_extra_iex.admin.inc',
   );
 
   $items['ajax/deploy/download/%uuid/%'] = array(
-    'page callback'  => 'deploy_extra_iex_ajax_deploy_download',
+    'page callback' => 'deploy_extra_iex_ajax_deploy_download',
     'page arguments' => array(3, 4),
     'delivery callback' => 'ajax_deliver',
     'access arguments' => array('administer deploy iex'),
@@ -91,7 +91,7 @@ function deploy_extra_iex_ctools_plugin_type() {
     'export_formats' => array(
       'cache' => TRUE,
       'use hooks' => TRUE,
-      'classes'   => array('handler'),
+      'classes' => array('handler'),
     ),
   );
 }
@@ -107,8 +107,8 @@ function deploy_extra_iex_deploy_extra_iex_export_formats() {
       'description' => 'Provides json export format.',
       'handler' => array(
         'class' => 'DeployExtraJSON',
-        'file'  => 'DeployExtraJSON.inc',
-        'path'  => $path,
+        'file' => 'DeployExtraJSON.inc',
+        'path' => $path,
       ),
     ),
     'DeployExtraYaml' => array(
@@ -116,8 +116,8 @@ function deploy_extra_iex_deploy_extra_iex_export_formats() {
       'description' => 'Provides yaml export format.',
       'handler' => array(
         'class' => 'DeployExtraYaml',
-        'file'  => 'DeployExtraYaml.inc',
-        'path'  => $path,
+        'file' => 'DeployExtraYaml.inc',
+        'path' => $path,
       ),
     ),
   );

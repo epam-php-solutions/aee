@@ -46,7 +46,7 @@ function deloy_extra_import_entity($entity_type, $uuid, $entity, $config) {
   module_invoke_all('hook_deploy_extra_import_complete', $entity_type, $entity, $uuid, $config, $status);
 
   // Return error if deploy was failed.
-  if(is_array($status) && $status['status'] == DEPLOY_EXTRA_IMPORT_STATUS_FAILED) {
+  if (is_array($status) && $status['status'] == DEPLOY_EXTRA_IMPORT_STATUS_FAILED) {
     return services_error($status['error'], 406, $entity);
   }
 }
@@ -59,12 +59,12 @@ function deploy_extra_deploy_extra_import_callbacks(&$callbacks, &$config, $uuid
   // If enable skip updates mode.
   if ($config['tmode'] || ($config['skip'] && !empty($config['entity_exists']))) {
     // Remove default (save) callback for deploy test mode.
-      foreach($callbacks as $id => $callback) {
-        if ($callback == DEPLOY_EXTRA_IMPORT_DEFAULT_CALLBACK) {
-          // Remove save callback.
-          unset($callbacks[$id]);
-          return ($config['skip']) ? DEPLOY_EXTRA_IMPORT_STATUS_SKIPPED : DEPLOY_EXTRA_IMPORT_STATUS_SAVED;
-        }
+    foreach ($callbacks as $id => $callback) {
+      if ($callback == DEPLOY_EXTRA_IMPORT_DEFAULT_CALLBACK) {
+        // Remove save callback.
+        unset($callbacks[$id]);
+        return ($config['skip']) ? DEPLOY_EXTRA_IMPORT_STATUS_SKIPPED : DEPLOY_EXTRA_IMPORT_STATUS_SAVED;
+      }
     }
   }
 }
@@ -104,7 +104,7 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
   } catch (Exception $exception) {
     watchdog_exception('deploy_extra', $exception);
     $status['status'] = DEPLOY_EXTRA_IMPORT_STATUS_FAILED;
-    $status['error']  = $exception;
+    $status['error'] = $exception;
   }
 }
 
@@ -128,10 +128,10 @@ function _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, 
  * @param $config
  */
 function deploy_extra_import_settings_preparation(&$config) {
-  $config['adv_log']        = !empty($config['adv_log']) ? TRUE : FALSE;
+  $config['adv_log'] = !empty($config['adv_log']) ? TRUE : FALSE;
   $config['deployment_key'] = !empty($config['deployment_key']) ? $config['deployment_key'] : FALSE;
-  $config['tmode']          = !empty($config['tmode']) ? TRUE : FALSE;
-  $config['skip']           = !empty($config['skip']) ? TRUE : FALSE;
+  $config['tmode'] = !empty($config['tmode']) ? TRUE : FALSE;
+  $config['skip'] = !empty($config['skip']) ? TRUE : FALSE;
 }
 
 /**
@@ -142,7 +142,7 @@ function deploy_extra_import_settings_preparation(&$config) {
  */
 function deploy_extra_debug($data, $func = '') {
   $prefix = '';
-  if(!empty($func)) {
+  if (!empty($func)) {
     $prefix = 'Function:' . $func . '<br> ';
   }
 

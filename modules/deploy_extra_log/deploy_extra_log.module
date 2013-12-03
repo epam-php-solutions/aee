@@ -62,7 +62,7 @@ function deploy_extra_log_deploy_extra_import_callbacks(&$callbacks, $config) {
  * Implements hook_deploy_extra_import_complete().
  */
 function deploy_extra_log_deploy_extra_import_complete($entity_type, $entity, $uuid, $config, $status) {
-  if(is_array($status) && !empty($status['status'])) {
+  if (is_array($status) && !empty($status['status'])) {
     $status = $status['status'];
   }
   _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, $status);
@@ -77,7 +77,7 @@ function deploy_extra_log_deploy_extra_import_complete($entity_type, $entity, $u
  * @return bool
  */
 function deploy_extra_log_adv_log_ability($config) {
-  if($config['adv_log'] && $config['deployment_key']) {
+  if ($config['adv_log'] && $config['deployment_key']) {
     return TRUE;
   }
   return FALSE;

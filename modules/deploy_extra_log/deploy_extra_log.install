@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Install file for for the deploy_extra_log module.
+ */
+
+/**
  * Implementation of hook_schema().
  */
 function deploy_extra_log_schema() {
@@ -8,7 +13,6 @@ function deploy_extra_log_schema() {
 
   $schema[DEPLOY_EXTRA_LOG_TABLE_NAME] = array(
     'description' => 'Base table holding deployment logs per import entity.',
-
     'fields' => array(
       'lid' => array(
         'description' => 'Log ID.',

@@ -11,7 +11,7 @@ function deploy_extra_log_views_data() {
   // Basic table information.
   // @TODO add field data and handler to view
 
-  $data['deploy_extra_import_log']['table']['group']  = t('Deploy Extra');
+  $data['deploy_extra_import_log']['table']['group'] = t('Deploy Extra');
 
   // Advertise this table as a possible base table
   $data['deploy_extra_import_log']['table']['base'] = array(
@@ -437,7 +437,7 @@ function deploy_extra_log_views_default_views() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
-  $handler->display->display_options['path'] = module_exists('deploy_ui') ?  'admin/structure/deploy/deploy-extra-log' : 'admin/reports/deploy-extra-log';
+  $handler->display->display_options['path'] = module_exists('deploy_ui') ? 'admin/structure/deploy/deploy-extra-log' : 'admin/reports/deploy-extra-log';
   $handler->display->display_options['menu']['type'] = module_exists('deploy_ui') ? 'tab' : 'normal';
   $handler->display->display_options['menu']['title'] = 'Deploy Extra Log';
   $handler->display->display_options['menu']['weight'] = 50;

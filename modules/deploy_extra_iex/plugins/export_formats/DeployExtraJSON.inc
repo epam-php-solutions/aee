@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains DeployExtraJSON class.
+ */
+
 class DeployExtraJSON implements DeployExtraFormat {
   public function encodeData($data) {
     return drupal_json_encode($data);
