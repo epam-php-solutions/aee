@@ -16,15 +16,15 @@ define('DEPLOY_EXTRA_LOG_TABLE_NAME', 'deploy_extra_import_log');
 module_load_include('inc', 'deploy_extra_log', 'deploy_extra_log.core');
 
 /**
- * Implements hook_DeployServiceRestJsonAdv_form_alter().
+ * Implements hook_deploy_extra_config_form_alter().
  */
-function deploy_extra_log_DeployServiceRestJsonAdv_form_alter(&$form, &$form_state, &$config) {
+function deploy_extra_log_deploy_extra_config_form_alter(&$form, &$form_state, $values) {
   // Settings for using advanced logging mode.
   $form['adv_log'] = array(
     '#title' => t('Advanced Logging'),
     '#description' => t("Select this if the advanced logging mode should be enabled"),
     '#type' => 'checkbox',
-    '#default_value' => $config['adv_log'],
+    '#default_value' => $values['adv_log'],
     '#weight' => 8,
   );
 }
@@ -46,4 +46,39 @@ function deploy_extra_log_views_api() {
     'api' => '3.0-alpha1',
     'path' => drupal_get_path('module', 'deploy_extra_log') . '/views',
   );
+}
+
+/**
+ * Implements hook_deploy_extra_import_callbacks().
+ */
+function deploy_extra_log_deploy_extra_import_callbacks(&$callbacks, $config) {
+  // Adding the checking callback.
+  if (deploy_extra_log_adv_log_ability($config)) {
+    $callbacks[] = 'deploy_extra_log_import_check';
+  }
+}
+
+/**
+ * Implements hook_deploy_extra_import_complete().
+ */
+function deploy_extra_log_deploy_extra_import_complete($entity_type, $entity, $uuid, $config, $status) {
+  if(is_array($status) && !empty($status['status'])) {
+    $status = $status['status'];
+  }
+  _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, $status);
+}
+
+/**
+ * Helper function.
+ * Check whether the import supports advanced logging.
+ *
+ * @param $config
+ * array with import process settings.
+ * @return bool
+ */
+function deploy_extra_log_adv_log_ability($config) {
+  if($config['adv_log'] && $config['deployment_key']) {
+    return TRUE;
+  }
+  return FALSE;
 }

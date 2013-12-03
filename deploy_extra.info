@@ -3,6 +3,6 @@ description = Extends the Deploy module functionality
 package = Deployment
 core = 7.x
 
-dependencies[] = deploy
+dependencies[] = uuid
 
 files[] = plugins/DeployServiceRestJsonAdv.inc

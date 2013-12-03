@@ -25,14 +25,48 @@ function deloy_extra_import_entity($entity_type, $uuid, $entity, $config) {
   $id = entity_get_id_by_uuid($entity_type, array($uuid));
   $config['entity_exists'] = !empty($id[$uuid]);
 
-  // If enable skip updates mode.
-  if ($config['skip'] && $config['entity_exists']) {
-    // Entity already exists. Enable tmode for this entity.
-    $config['tmode'] = TRUE;
+  // Add default import callback.
+  $callbacks[] = DEPLOY_EXTRA_IMPORT_DEFAULT_CALLBACK;
+
+  // Get all callbacks for the import process.
+  foreach (module_implements('deploy_extra_import_callbacks') as $module) {
+    $function = $module . '_deploy_extra_import_callbacks';
+    // Modules can change the $config and add their own callback functions.
+    $function($callbacks, $config, $uuid, $entity_type, $entity);
   }
 
-  // Perform update/create process.
-  deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config);
+  // Process callback functions.
+  $status = DEPLOY_EXTRA_IMPORT_STATUS_PROCESSED;
+  foreach ($callbacks as $callback) {
+    // will call all modules import callbacks.
+    $status = $callback($entity_type, $entity, $uuid, $config);
+  }
+
+  // will call all modules implementing hook_deploy_extra_import_complete.
+  module_invoke_all('hook_deploy_extra_import_complete', $entity_type, $entity, $uuid, $config, $status);
+
+  // Return error if deploy was failed.
+  if(is_array($status) && $status['status'] == DEPLOY_EXTRA_IMPORT_STATUS_FAILED) {
+    return services_error($status['error'], 406, $entity);
+  }
+}
+
+/**
+ * Implements hook_deloy_extra_import_callbacks().
+ */
+function deploy_extra_deploy_extra_import_callbacks(&$callbacks, &$config, $uuid, $entity_type) {
+
+  // If enable skip updates mode.
+  if ($config['tmode'] || ($config['skip'] && !empty($config['entity_exists']))) {
+    // Remove default (save) callback for deploy test mode.
+      foreach($callbacks as $id => $callback) {
+        if ($callback == DEPLOY_EXTRA_IMPORT_DEFAULT_CALLBACK) {
+          // Remove save callback.
+          unset($callbacks[$id]);
+          return ($config['skip']) ? DEPLOY_EXTRA_IMPORT_STATUS_SKIPPED : DEPLOY_EXTRA_IMPORT_STATUS_SAVED;
+        }
+    }
+  }
 }
 
 /**
@@ -55,14 +89,6 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
       $entity = (object) $entity;
     }
 
-    // Perform checking process.
-    if (deploy_extra_adv_log_ability($config)) {
-      // Create a clone of the entity object to check,
-      // that forbid directly changing entity object.
-      $clone = clone $entity;
-      deploy_extra_import_check($entity_type, $uuid, $clone, $config['deployment_key']);
-    }
-
     // Test mode.
     if (!empty($config['tmode'])) {
       $status = ($config['skip'] && $config['entity_exists']) ? DEPLOY_EXTRA_IMPORT_STATUS_SKIPPED : DEPLOY_EXTRA_IMPORT_STATUS_TEST_MODE;
@@ -73,20 +99,12 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
       $status = ($config['entity_exists']) ? DEPLOY_EXTRA_IMPORT_STATUS_UPDATED : DEPLOY_EXTRA_IMPORT_STATUS_SAVED;
     }
 
-    // Save the status of the operation into the log.
-    if (deploy_extra_adv_log_ability($config)) {
-      _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, $status);
-    }
+    return $status;
 
   } catch (Exception $exception) {
     watchdog_exception('deploy_extra', $exception);
-
-    // Save the status of the operation into the log.
-    if (deploy_extra_adv_log_ability($config)) {
-      _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, DEPLOY_EXTRA_IMPORT_STATUS_FAILED);
-    }
-
-    return services_error($exception, 406, $entity);
+    $status['status'] = DEPLOY_EXTRA_IMPORT_STATUS_FAILED;
+    $status['error']  = $exception;
   }
 }
 
@@ -148,20 +166,5 @@ function deploy_extra_get_vuuid_from_entity($entity, $entity_type) {
     }
   }
 
-  return FALSE;
-}
-
-/**
- * Helper function.
- * Check whether the import supports advanced logging.
- *
- * @param $config
- * array with import process settings.
- * @return bool
- */
-function deploy_extra_adv_log_ability($config) {
-  if($config['adv_log'] && $config['deployment_key'] && module_exists('deploy_extra_log')) {
-    return TRUE;
-  }
   return FALSE;
 }

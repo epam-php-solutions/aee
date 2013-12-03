@@ -3,6 +3,9 @@
 /**
  * Implements hook_services_resources_alter().
  *
+ * Alter update operation callback, to make use the additional deploy modes when
+ * exposing them through Services.
+ *
  */
 function deploy_extra_services_resources_alter(&$resources, &$endpoint) {
   foreach (entity_get_info() as $entity_type => $entity_info) {
@@ -63,7 +66,7 @@ function _deploy_extra_services_update($entity_type, $uuid, $entity) {
 }
 
 /**
- * Just storing old save/update callback.
+ * Storing old save/update service callback.
  *
  * @param bool $callback
  * @return bool
