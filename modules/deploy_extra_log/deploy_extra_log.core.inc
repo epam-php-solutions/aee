@@ -102,8 +102,9 @@ function deploy_extra_log_import_check($entity_type, $uuid, $entity, $config) {
   // Checking structure.
   $messages += module_invoke_all('deploy_extra_check_structure', $entity_type, $entity);
 
+  // @TODO CHECK this
   // Let other modules alter messages for this entity.
-  drupal_alter('deploy_extra_check_structure', $messages, $entity_type, $entity);
+  // drupal_alter('deploy_extra_check_structure', $messages, $entity_type, $entity);
 
   // Write messages to log.
   deploy_extra_import_log($deployment_key, $uuid, $entity_type, $messages, $vuuid);

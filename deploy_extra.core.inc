@@ -30,7 +30,7 @@ function deloy_extra_import_entity($entity_type, $uuid, $entity, $config) {
 
   // Get all callbacks for the import process.
   foreach (module_implements('deploy_extra_import_callbacks') as $module) {
-    $function = $module . '_hook_name';
+    $function = $module . '_deploy_extra_import_callbacks';
     // Modules can change the $config and add their own callback functions.
     $function($callbacks, $config, $uuid, $entity_type, $entity);
   }
