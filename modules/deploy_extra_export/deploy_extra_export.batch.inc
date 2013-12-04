@@ -2,7 +2,7 @@
 
 /**
  * @file
- * This is the file description for Deploy Extra IEX batch.
+ * This is the file description for Deploy Extra Export batch.
  */
 
 /**

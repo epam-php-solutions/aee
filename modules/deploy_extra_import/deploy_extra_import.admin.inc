@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Includes the admin callbacks and functions for Deploy Extra IEX module.
+ * Includes the admin callbacks and functions for Deploy Extra Import module.
  */
 
 /**
@@ -186,7 +186,7 @@ function deploy_extra_import_entity_import_form_validate($form, &$form_state) {
 
   // If have empty data, set the error and reload the page.
   if (empty($data)) {
-    drupal_set_message(t('You have empty data of entities', array(), $context), 'error');
+    drupal_set_message(t('You have empty imported data', array(), $context), 'error');
     $form_state['rebuild'] = TRUE;
     return;
   }
@@ -199,7 +199,8 @@ function deploy_extra_import_entity_import_form_validate($form, &$form_state) {
 
   // If have empty $lock_name, set the error and reload the page.
   if (!$lock_name) {
-    drupal_set_message(t('You have incorrect data of entities', array(), $context), 'error');
+    $mess = 'Probably you have mixed format data to be imported or have tried to import incorrect data. Please check the selected format and try again';
+    drupal_set_message(t($mess, array(), $context), 'error');
     $form_state['rebuild'] = TRUE;
     return;
   }
@@ -214,7 +215,7 @@ function deploy_extra_import_entity_import_form_validate($form, &$form_state) {
 }
 
 /**
- * Submission handler for deploy_extra_iex_entity_import_form().
+ * Submission handler for deploy_extra_import_entity_import_form().
  */
 function deploy_extra_import_entity_import_form_submit($form, $form_state) {
   // Use in translation context.

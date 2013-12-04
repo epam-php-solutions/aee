@@ -49,10 +49,10 @@ class DeployProcessorForm extends DeployProcessorMemory {
     );
 
     // Add batch export operation for passing deploy info to results array.
-    $this->operations[]  = array('deploy_extra_export_pass_deploy_info', $options);
+    $this->operations[] = array('deploy_extra_export_pass_deploy_info', $options);
 
     foreach ($this->data as $entity) {
-      $this->operations[]  = array('deploy_extra_export_prepare_data_entities', array($entity));
+      $this->operations[] = array('deploy_extra_export_prepare_data_entities', array($entity));
     }
   }
 

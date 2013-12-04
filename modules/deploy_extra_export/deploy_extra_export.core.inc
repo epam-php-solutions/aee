@@ -2,7 +2,7 @@
 
 /**
  * @file
- * This is the file description for Deploy Extra IEX core.
+ * This is the file description for Deploy Extra Export core.
  */
 
 /**

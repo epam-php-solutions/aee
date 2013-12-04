@@ -20,7 +20,7 @@ function deploy_extra_formats_ctools_plugin_type() {
     'formats' => array(
       'cache' => TRUE,
       'use hooks' => TRUE,
-      'classes'   => array('handler'),
+      'classes' => array('handler'),
     ),
   );
 }
