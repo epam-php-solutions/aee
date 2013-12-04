@@ -20,6 +20,9 @@ function deploy_extra_import_entity_import_form($form, &$form_state) {
   // Use in translation context.
   $context = array('context' => DEPLOY_EXTRA_IMPORT_TRANSLATE_CONTEXT);
 
+  // Set form ID.
+  $form['#attributes'] = array('id' => DEPLOY_EXTRA_IMPORT_FORM_ID);
+
   // Fieldset.
   $form['import'] = array(
     '#type' => 'fieldset',
@@ -28,20 +31,6 @@ function deploy_extra_import_entity_import_form($form, &$form_state) {
 
   // Get import formats options.
   $options = deploy_extra_formats_get_formats_options($form_state, 'configImportForm');
-
-  // If deploy_extra_log is enable, show the additional settings.
-  $import_config = array();
-
-  // Let other modules have their say.
-  drupal_alter('deploy_extra_config_form', $form, $form_state, $import_config);
-
-  if ($import_config) {
-    $form['import']['import_config'] = array(
-      '#type' => 'checkboxes',
-      '#title' => t('Configuration of import', array(), $context),
-      '#options' => $import_config,
-    );
-  }
 
   // List of import formats.
   $form['import']['format'] = array(
@@ -223,11 +212,9 @@ function deploy_extra_import_entity_import_form_submit($form, $form_state) {
 
   // Default value.
   $import_config = array();
-  if (isset($form_state['values']['import_config'])) {
-    foreach ($form_state['values']['import_config'] as $key => $value) {
-      $import_config[$key] = !empty($value) ? 1 : 0;
-    }
-  }
+
+  // Let other modules have their say.
+  drupal_alter('deploy_extra_config_form', $form_state, $import_config);
 
   // Import data.
   $data = $form_state['deploy_extra_import_data'];
