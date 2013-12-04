@@ -70,7 +70,7 @@ function _deploy_extra_services_update($entity_type, $uuid, $entity) {
 }
 
 /**
- * Storing the old save/update service callback.
+ * Saving the old save/update service callback.
  *
  * @param bool $callback
  * @return bool
