@@ -89,22 +89,26 @@ function deploy_extra_import_log($deployment_key, $uuid, $entity_type, $messages
 /*
  * Structure errors Logging system.
  */
-function deploy_extra_log_import_check($entity_type, $uuid, $entity, $config) {
+function deploy_extra_log_import_check($entity_type, $entity, $uuid, $config) {
   $deployment_key = $config['deployment_key'];
   $vuuid = deploy_extra_get_vuuid_from_entity($entity, $entity_type);
 
-  // Perform general checks for entity.
-  $messages = deploy_extra_import_check_common($entity_type, $uuid, $entity, $deployment_key);
+  // Creating a clone of the entity object to check,
+  // that forbid directly changing the entity object.
+  // $clone = clone $entity;
+  $clone = $entity;
 
   // Make an entity local.
-  entity_make_entity_local($entity_type, $entity);
+  entity_make_entity_local($entity_type, $clone);
+
+  // Perform general checks for entity.
+  $messages = deploy_extra_import_check_common($entity_type, $uuid, $clone, $deployment_key);
 
   // Checking structure.
-  $messages += module_invoke_all('deploy_extra_check_structure', $entity_type, $entity);
+  $messages += module_invoke_all('deploy_extra_check_structure', $entity_type, $clone);
 
-  // @TODO CHECK this
   // Let other modules alter messages for this entity.
-  // drupal_alter('deploy_extra_check_structure', $messages, $entity_type, $entity);
+  drupal_alter('deploy_extra_check_structure', $messages, $entity_type, $clone);
 
   // Write messages to log.
   deploy_extra_import_log($deployment_key, $uuid, $entity_type, $messages, $vuuid);
@@ -135,7 +139,7 @@ function deploy_extra_import_check_common($entity_type, $uuid, $entity, $deploym
     );
   }
 
-  // If this entity type doesn't support UUIDs.
+  // If the entity type doesn't support UUIDs.
   if (empty($entities[$entity_type]['uuid'])) {
     $messages[] = array(
       'message' => t('This entity type - %entity_type does not support UUIDs.',
@@ -144,7 +148,7 @@ function deploy_extra_import_check_common($entity_type, $uuid, $entity, $deploym
     );
   }
 
-  // Check for the existence of an entity bundle.
+  // Checking for the existence of an entity bundle.
   list(, , $bundle_name) = entity_extract_ids($entity_type, $entity);
   $entity_info = entity_get_info($entity_type);
   $bundles = $entity_info['bundles'];
@@ -173,7 +177,7 @@ function field_deploy_extra_check_structure($entity_type, $entity) {
     foreach ($entity->{$field_name} as $langcode => $items) {
       $field_errors_log = module_invoke($field['module'], 'deploy_extra_check_field_structure', $entity_type, $entity, $field, $instance, $langcode, $items);
 
-      // Let other modules alter messages for this field.
+      // Let other modules alter messages for the field.
       drupal_alter('deploy_extra_check_field_structure', $field_errors_log, $entity_type, $entity, $field, $instance, $langcode, $items);
 
       if (!empty($str_errors_log)) {
@@ -192,16 +196,17 @@ function node_deploy_extra_check_structure($entity_type, $entity) {
     $context = array('context' => DEPLOY_EXTRA_LOG_TRANSLATE_CONTEXT);
     $messages = array();
 
-    // Define message type.
+    // Define the message type.
     $message_type = t('Node', array(), $context);
 
-    // All languages on the site.
+    // Getting all languages on the site.
     $lang = language_list();
 
+    // Using the entity metadata wrapper to get the language property.
     $wrapper = entity_metadata_wrapper($entity_type, $entity);
     $node_lang = $wrapper->language->value();
 
-    // No such language on the site.
+    // There is no such language on the site.
     if (!isset($lang[$node_lang]) && $node_lang != LANGUAGE_NONE) {
       $messages[] = array(
         'message' => t('No such language - %lang on the site.', array('%lang' => $node_lang), $context),
@@ -224,9 +229,12 @@ function taxonomy_field_deploy_extra_check_field_structure($entity_type, $entity
   return $messages;
 }
 
-/*
+/**
  * Helper function.
  * Converts an array of log messages into a plain text.
+ *
+ * @param array $data
+ * @return string
  */
 function deploy_extra_log_message_to_text($data) {
   $text = '';
@@ -238,11 +246,15 @@ function deploy_extra_log_message_to_text($data) {
 }
 
 /**
- * @param int $status
+ * Helper function.
+ * Converts the integer status to the human readable text.
  *
- * @return array of status/statuses or False
+ * @param int $status
+ *   The deploy process statuses - examples are 0, 1.
+ *
+ * @return
+ *   Array of status/statuses or readable text or False.
  */
-
 function _deploy_extra_log_status_to_string($status = NULL) {
 
   $statuses = array(
@@ -263,5 +275,4 @@ function _deploy_extra_log_status_to_string($status = NULL) {
   }
 
   return FALSE;
-
 }

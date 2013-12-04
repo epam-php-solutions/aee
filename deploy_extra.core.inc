@@ -35,18 +35,32 @@ function deploy_extra_import_entity($entity_type, $uuid, $entity, $config) {
     $function($callbacks, $config, $uuid, $entity_type, $entity);
   }
 
-  // Process callback functions.
   $status = DEPLOY_EXTRA_IMPORT_STATUS_PROCESSED;
-  foreach ($callbacks as $callback) {
-    // will call all modules import callbacks.
-    $status = $callback($entity_type, $entity, $uuid, $config);
+
+  try {
+    $controller = entity_get_controller($entity_type);
+    if ($controller instanceof EntityAPIControllerInterface) {
+      $entity = $controller->create($entity);
+    }
+    else {
+      $entity = (object) $entity;
+    }
+
+    // Calling all modules import callbacks.
+    foreach ($callbacks as $callback) {
+      $status = $callback($entity_type, $entity, $uuid, $config);
+    }
+
+  } catch (Exception $exception) {
+    watchdog_exception('deploy_extra', $exception);
+    $status = DEPLOY_EXTRA_IMPORT_STATUS_FAILED;
   }
 
-  // will call all modules implementing hook_deploy_extra_import_complete.
+  // Allow modules to do something after the deploy process has been finished.
   module_invoke_all('hook_deploy_extra_import_complete', $entity_type, $entity, $uuid, $config, $status);
 
-  // Return error if deploy was failed.
-  if (is_array($status) && $status['status'] == DEPLOY_EXTRA_IMPORT_STATUS_FAILED) {
+  // Return error if deploy has been failed.
+  if ($status == DEPLOY_EXTRA_IMPORT_STATUS_FAILED) {
     return services_error($status['error'], 406, $entity);
   }
 }
@@ -56,14 +70,14 @@ function deploy_extra_import_entity($entity_type, $uuid, $entity, $config) {
  */
 function deploy_extra_deploy_extra_import_callbacks(&$callbacks, &$config, $uuid, $entity_type) {
 
-  // If enable skip updates mode.
+  // If enabled mode to skip updates and entity already exists or enabled tmode.
   if ($config['tmode'] || ($config['skip'] && !empty($config['entity_exists']))) {
-    // Remove default (save) callback for deploy test mode.
+    // Remove default (save) callback for the test mode.
     foreach ($callbacks as $id => $callback) {
       if ($callback == DEPLOY_EXTRA_IMPORT_DEFAULT_CALLBACK) {
         // Remove save callback.
         unset($callbacks[$id]);
-        return ($config['skip']) ? DEPLOY_EXTRA_IMPORT_STATUS_SKIPPED : DEPLOY_EXTRA_IMPORT_STATUS_SAVED;
+        return ($config['skip']) ? DEPLOY_EXTRA_IMPORT_STATUS_SKIPPED : DEPLOY_EXTRA_IMPORT_STATUS_TEST_MODE;
       }
     }
   }
@@ -80,32 +94,11 @@ function deploy_extra_deploy_extra_import_callbacks(&$callbacks, &$config, $uuid
  * @return mixed|object
  */
 function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) {
-  try {
-    $controller = entity_get_controller($entity_type);
-    if ($controller instanceof EntityAPIControllerInterface) {
-      $entity = $controller->create($entity);
-    }
-    else {
-      $entity = (object) $entity;
-    }
+  // Perform the save/update operation.
+  entity_uuid_save($entity_type, $entity);
+  $status = ($config['entity_exists']) ? DEPLOY_EXTRA_IMPORT_STATUS_UPDATED : DEPLOY_EXTRA_IMPORT_STATUS_SAVED;
 
-    // Test mode.
-    if (!empty($config['tmode'])) {
-      $status = ($config['skip'] && $config['entity_exists']) ? DEPLOY_EXTRA_IMPORT_STATUS_SKIPPED : DEPLOY_EXTRA_IMPORT_STATUS_TEST_MODE;
-    }
-    else {
-      // Perform save/update operation.
-      entity_uuid_save($entity_type, $entity);
-      $status = ($config['entity_exists']) ? DEPLOY_EXTRA_IMPORT_STATUS_UPDATED : DEPLOY_EXTRA_IMPORT_STATUS_SAVED;
-    }
-
-    return $status;
-
-  } catch (Exception $exception) {
-    watchdog_exception('deploy_extra', $exception);
-    $status['status'] = DEPLOY_EXTRA_IMPORT_STATUS_FAILED;
-    $status['error'] = $exception;
-  }
+  return $status;
 }
 
 /**

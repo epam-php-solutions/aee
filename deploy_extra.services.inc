@@ -16,18 +16,18 @@ function deploy_extra_services_resources_alter(&$resources, &$endpoint) {
   foreach (entity_get_info() as $entity_type => $entity_info) {
     if (!empty($entity_info['uuid']) && isset($resources[$entity_type])) {
 
-      // Try to save old callback function name to variable.
+      // Trying to save the old callback function name to the variable.
       $old_callback = $resources[$entity_type]['operations']['update']['callback'];
       _deploy_extra_services_old_update_callback($old_callback);
 
-      // We should change only update callback.
+      // Changing the update callback.
       $resources[$entity_type]['operations']['update']['callback'] = '_deploy_extra_services_update';
     }
   }
 }
 
 /**
- * Callback for the 'update' method.
+ * New callback for the 'update' method.
  *
  */
 function _deploy_extra_services_update($entity_type, $uuid, $entity) {
@@ -44,9 +44,9 @@ function _deploy_extra_services_update($entity_type, $uuid, $entity) {
     return $entity;
   }
 
-  // Use native function for update/save operations.
+  // Trying to use native function for the update/save operations.
   elseif (function_exists($old_callback)) {
-    // Execute native uuid_services function.
+    // Executing the native uuid_services function.
     call_user_func($old_callback, $entity_type, $uuid, $entity);
 
   }
@@ -70,7 +70,7 @@ function _deploy_extra_services_update($entity_type, $uuid, $entity) {
 }
 
 /**
- * Storing old save/update service callback.
+ * Saving the old save/update service callback.
  *
  * @param bool $callback
  * @return bool

@@ -22,7 +22,7 @@ define('DEPLOY_EXTRA_IMPORT_DEFAULT_CALLBACK', 'deploy_extra_import_entity_save'
 module_load_include('inc', 'deploy_extra', 'deploy_extra.core');
 
 /**
- * Include the services hook implementations.
+ * Include core functions provided by the Deploy Extra module.
  */
 module_load_include('inc', 'deploy_extra', 'deploy_extra.services');
 
@@ -54,14 +54,15 @@ function deploy_extra_form_alter(&$form, &$form_state, $form_id) {
  */
 function deploy_extra_deploy_services() {
   $path = drupal_get_path('module', 'deploy_extra') . '/plugins';
+  // Adding the new service plugin for extensibility.
   return array(
     'DeployServiceRestJsonAdv' => array(
       'name' => 'REST JSON advanced',
-      'description' => 'Same as the REST JSON service + additional logging capabilities + test mode',
+      'description' => 'Same as the REST JSON service + additional modes',
       'handler' => array(
         'class' => 'DeployServiceRestJsonAdv',
-        'file' => 'DeployServiceRestJsonAdv.inc',
-        'path' => $path,
+        'file'  => 'DeployServiceRestJsonAdv.inc',
+        'path'  => $path,
       ),
     ),
   );
