@@ -40,7 +40,7 @@ function _deploy_extra_services_update($entity_type, $uuid, $entity) {
     $config = $entity['__metadata']['deploy_extra'];
 
     // Perform update/save operations.
-    deloy_extra_import_entity($entity_type, $uuid, $entity, $config);
+    deploy_extra_import_entity($entity_type, $uuid, $entity, $config);
     return $entity;
   }
 

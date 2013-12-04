@@ -247,7 +247,7 @@ function deploy_extra_iex_entity_import_form_submit($form, $form_state) {
       );
 
       // Add import operation and pass the arguments to it.
-      $operations[] = array('deloy_extra_import_entity', $options);
+      $operations[] = array('deploy_extra_import_entity', $options);
     }
   }
 

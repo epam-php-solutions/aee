@@ -13,7 +13,7 @@
  * @param $entity
  * @param $config
  */
-function deloy_extra_import_entity($entity_type, $uuid, $entity, $config) {
+function deploy_extra_import_entity($entity_type, $uuid, $entity, $config) {
 
   // Settings preparation.
   deploy_extra_import_settings_preparation($config);
