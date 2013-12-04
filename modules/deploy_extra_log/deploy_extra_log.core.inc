@@ -89,22 +89,26 @@ function deploy_extra_import_log($deployment_key, $uuid, $entity_type, $messages
 /*
  * Structure errors Logging system.
  */
-function deploy_extra_log_import_check($entity_type, $uuid, $entity, $config) {
+function deploy_extra_log_import_check($entity_type, $entity, $uuid, $config) {
   $deployment_key = $config['deployment_key'];
   $vuuid = deploy_extra_get_vuuid_from_entity($entity, $entity_type);
 
-  // Perform general checks for entity.
-  $messages = deploy_extra_import_check_common($entity_type, $uuid, $entity, $deployment_key);
+  // Creating a clone of the entity object to check,
+  // that forbid directly changing the entity object.
+  // $clone = clone $entity;
+  $clone = $entity;
 
   // Make an entity local.
-  entity_make_entity_local($entity_type, $entity);
+  entity_make_entity_local($entity_type, $clone);
+
+  // Perform general checks for entity.
+  $messages = deploy_extra_import_check_common($entity_type, $uuid, $clone, $deployment_key);
 
   // Checking structure.
-  $messages += module_invoke_all('deploy_extra_check_structure', $entity_type, $entity);
+  $messages += module_invoke_all('deploy_extra_check_structure', $entity_type, $clone);
 
-  // @TODO CHECK this
   // Let other modules alter messages for this entity.
-  // drupal_alter('deploy_extra_check_structure', $messages, $entity_type, $entity);
+  drupal_alter('deploy_extra_check_structure', $messages, $entity_type, $clone);
 
   // Write messages to log.
   deploy_extra_import_log($deployment_key, $uuid, $entity_type, $messages, $vuuid);

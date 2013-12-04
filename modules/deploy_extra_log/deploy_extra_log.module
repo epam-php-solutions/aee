@@ -62,9 +62,7 @@ function deploy_extra_log_deploy_extra_import_callbacks(&$callbacks, $config) {
  * Implements hook_deploy_extra_import_complete().
  */
 function deploy_extra_log_deploy_extra_import_complete($entity_type, $entity, $uuid, $config, $status) {
-  if (is_array($status) && !empty($status['status'])) {
-    $status = $status['status'];
-  }
+  // Update the deploy status.
   _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, $status);
 }
 
