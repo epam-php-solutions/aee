@@ -52,9 +52,23 @@ function deploy_extra_log_views_api() {
  * Implements hook_deploy_extra_import_callbacks().
  */
 function deploy_extra_log_deploy_extra_import_callbacks(&$callbacks, $config) {
-  // Adding the checking callback.
+
   if (deploy_extra_log_adv_log_ability($config)) {
+    // Remove save callback.
+    foreach ($callbacks as $id => $callback) {
+      if ($callback == DEPLOY_EXTRA_IMPORT_DEFAULT_CALLBACK) {
+        unset($callbacks[$id]);
+        $save_callback_exists = TRUE;
+      }
+    }
+
+    // Adding checking callback.
     $callbacks[] = 'deploy_extra_log_import_check';
+
+    // Adding save callback if it exists.
+    if(!empty($save_callback_exists)) {
+      $callbacks[] = DEPLOY_EXTRA_IMPORT_DEFAULT_CALLBACK;
+    }
   }
 }
 
