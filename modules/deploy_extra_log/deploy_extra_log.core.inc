@@ -42,12 +42,7 @@ function _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status,
   );
 
   if (is_array($data)) {
-
-    // Convert an array of log messages into a plain text.
-    $message = deploy_extra_log_message_to_text($data);
-
     $fields['data'] = !empty($data) ? serialize($data) : NULL;
-    $fields['message'] = $message;
   }
 
   if ($entity_vuuid) {
@@ -81,9 +76,23 @@ function deploy_extra_import_log_status($deployment_key, $uuid, $entity_type, $s
 /**
  * @TODO add the proper description
  */
-function deploy_extra_import_log($deployment_key, $uuid, $entity_type, $messages = array(), $entity_vuuid = NULL) {
+function deploy_extra_import_log($deployment_key, $uuid, $entity_type, $data = array(), $entity_vuuid = NULL) {
   $status = DEPLOY_EXTRA_IMPORT_STATUS_PROCESSED;
-  _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status, $messages, $entity_vuuid);
+  _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status, $data, $entity_vuuid);
+}
+
+
+/**
+ * @param $entity_type
+ * @param $entity
+ * @param $uuid
+ * @param $config
+ * @param $status
+ */
+function _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, $status) {
+  // Check whether the entity supports revision.
+  $vuuid = deploy_extra_get_vuuid_from_entity($entity, $entity_type);
+  deploy_extra_import_log_status($config['deployment_key'], $uuid, $entity_type, $status, $vuuid);
 }
 
 /*
@@ -110,8 +119,10 @@ function deploy_extra_log_import_check($entity_type, $entity, $uuid, $config) {
   // Let other modules alter messages for this entity.
   drupal_alter('deploy_extra_check_structure', $messages, $entity_type, $clone);
 
+  $data['message'] = $messages;
+
   // Write messages to log.
-  deploy_extra_import_log($deployment_key, $uuid, $entity_type, $messages, $vuuid);
+  deploy_extra_import_log($deployment_key, $uuid, $entity_type, $data, $vuuid);
 }
 
 /*
