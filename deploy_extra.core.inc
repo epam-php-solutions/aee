@@ -102,19 +102,6 @@ function deploy_extra_import_entity_save($entity_type, $entity, $uuid, $config) 
 }
 
 /**
- * @param $entity_type
- * @param $entity
- * @param $uuid
- * @param $config
- * @param $status
- */
-function _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, $status) {
-  // Check whether the entity supports revision.
-  $vuuid = deploy_extra_get_vuuid_from_entity($entity, $entity_type);
-  deploy_extra_import_log_status($config['deployment_key'], $uuid, $entity_type, $status, $vuuid);
-}
-
-/**
  * Helper function.
  * Import settings array preparations.
  *
