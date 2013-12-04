@@ -31,10 +31,10 @@ function deploy_extra_export_batch_finished_operation($success, $results, $opera
     // Load export formatter and encode the data of entities.
     $formatter = deploy_extra_formats_get_formats_plugins($export_format);
     $class = new $formatter['handler']['class'];
-    $data  = $class->encodeData(
+    $data = $class->encodeData(
       array(
         'processor_config' => $processor_config,
-        'entities'  => $results['entities'],
+        'entities' => $results['entities'],
       )
     );
 
@@ -50,8 +50,7 @@ function deploy_extra_export_batch_finished_operation($success, $results, $opera
       $function = $methods[$export_method]['export_callback'];
       $function($success, $results);
     }
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     if (!empty($lock_name)) {
       lock_release($lock_name);
     }

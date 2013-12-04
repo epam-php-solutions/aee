@@ -11,10 +11,11 @@
 class deploy_extra_log_handler_status_field extends views_handler_field {
 
   function render($values) {
-    $value = _deploy_extra_log_status_to_string($values->{$this->field_alias});
+    $status_id = $values->{$this->field_alias};
+    $status = _deploy_extra_log_status_to_string($status_id);
+    $value = $status[$status_id];
     return $value;
   }
-
 }
 
 /**
@@ -60,7 +61,7 @@ class deploy_extra_log_handler_field_entity_link extends views_handler_field {
 
     $ids = entity_get_id_by_uuid($entity_type, array($entity_uuid));
 
-    if(!empty($ids)) {
+    if (!empty($ids)) {
       $id = reset($ids);
       $entity = entity_load_single($entity_type, $id);
       if (entity_access('view', $entity_type, $entity)) {
@@ -71,5 +72,71 @@ class deploy_extra_log_handler_field_entity_link extends views_handler_field {
       }
     }
   }
-
 }
+
+/**
+ * Filter by entity type.
+ */
+class deploy_extra_log_handler_filter_entity_type extends views_handler_filter_in_operator {
+  function get_value_options() {
+    if (!isset($this->value_options)) {
+      $this->value_title = t('Entity types');
+      $types = entity_get_info();
+      $options = array();
+      foreach ($types as $type => $info) {
+        $options[$type] = t($info['label']);
+      }
+      unset($options['taxonomy_vocabulary']);
+      asort($options);
+      $this->value_options = $options;
+    }
+  }
+}
+
+/**
+ * Filter by status field.
+ */
+class deploy_extra_log_handler_filter_status_field extends views_handler_filter_in_operator {
+  function get_value_options() {
+    if (!isset($this->value_options)) {
+      $this->value_title = t('Status');
+      $types = _deploy_extra_log_status_to_string();
+      $options = array();
+      foreach ($types as $status_id => $status) {
+        $options[$status_id] = $status;
+      }
+      asort($options);
+      $this->value_options = $options;
+    }
+  }
+}
+
+/**
+ * Get message from data field.
+ */
+class deploy_extra_log_handler_data_message extends views_handler_field {
+
+  function construct() {
+    parent::construct();
+    $this->additional_fields['data'] = 'data';
+  }
+
+  function query() {
+    $this->ensure_my_table();
+    $this->add_additional_fields();
+  }
+
+  function render($values) {
+
+    $data = $this->get_value($values, 'data');
+
+    if (!empty($data)) {
+      $data = unserialize($data);
+      if (isset($data['message']) && !empty($data['message'])) {
+        $text = deploy_extra_log_message_to_text($data['message']);
+      }
+      return $text;
+    }
+  }
+}
+

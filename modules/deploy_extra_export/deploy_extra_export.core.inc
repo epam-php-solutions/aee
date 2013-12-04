@@ -74,7 +74,7 @@ function deploy_extra_export_file_export($success, $results) {
 
   $config = $results['processor_config'];
   $destination = trim($config['destination']);
-  $dir  = 'public://' . $destination . '/';
+  $dir = 'public://' . $destination . '/';
 
   // Check if directory is exist, if not - create it.
   if (!is_dir($dir)) {

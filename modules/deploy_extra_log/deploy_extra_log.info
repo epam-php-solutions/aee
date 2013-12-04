@@ -6,6 +6,4 @@ core = 7.x
 ; Views handlers
 files[] = views/handlers/deploy_extra_log_views_field_handlers.inc
 
-
 dependencies[] = deploy_extra
-dependencies[] = uuid_services

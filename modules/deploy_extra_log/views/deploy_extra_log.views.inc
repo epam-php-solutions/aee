@@ -11,7 +11,7 @@ function deploy_extra_log_views_data() {
   // Basic table information.
   // @TODO add field data and handler to view
 
-  $data['deploy_extra_import_log']['table']['group']  = t('Deploy Extra');
+  $data['deploy_extra_import_log']['table']['group'] = t('Deploy Extra');
 
   // Advertise this table as a possible base table
   $data['deploy_extra_import_log']['table']['base'] = array(
@@ -113,7 +113,7 @@ function deploy_extra_log_views_data() {
       'click sortable' => TRUE,
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
+      'handler' => 'deploy_extra_log_handler_filter_entity_type',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -129,7 +129,7 @@ function deploy_extra_log_views_data() {
       'click sortable' => TRUE,
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
+      'handler' => 'deploy_extra_log_handler_filter_status_field',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
@@ -142,6 +142,16 @@ function deploy_extra_log_views_data() {
     'help' => t('Complementary message, e.g. the exception in case of a failure.'),
     'field' => array(
       'handler' => 'views_handler_field',
+      'click sortable' => TRUE,
+    ),
+  );
+
+  // Data Message
+  $data['deploy_extra_import_log']['data_message'] = array(
+    'title' => t('Data Message'),
+    'help' => t('Complementary message from data field'),
+    'field' => array(
+      'handler' => 'deploy_extra_log_handler_data_message',
       'click sortable' => TRUE,
     ),
   );
@@ -183,7 +193,7 @@ function deploy_extra_log_views_default_views() {
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['exposed_form']['type'] = 'basic';
   $handler->display->display_options['pager']['type'] = 'full';
-  $handler->display->display_options['pager']['options']['items_per_page'] = '50';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '10';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = array(
     0 => array(
@@ -201,6 +211,7 @@ function deploy_extra_log_views_default_views() {
     'status' => 'status',
     'timestamp' => 'timestamp',
     'message' => 'message',
+    'link' => 'link',
   );
   $handler->display->display_options['style_options']['default'] = '-1';
   $handler->display->display_options['style_options']['info'] = array(
@@ -260,6 +271,11 @@ function deploy_extra_log_views_default_views() {
       'separator' => '',
       'empty_column' => 0,
     ),
+    'link' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
   );
   /* Field: Deploy Extra: Log ID */
   $handler->display->display_options['fields']['lid']['id'] = 'lid';
@@ -269,6 +285,7 @@ function deploy_extra_log_views_default_views() {
   $handler->display->display_options['fields']['deployment_uuid']['id'] = 'deployment_uuid';
   $handler->display->display_options['fields']['deployment_uuid']['table'] = 'deploy_extra_import_log';
   $handler->display->display_options['fields']['deployment_uuid']['field'] = 'deployment_uuid';
+  $handler->display->display_options['fields']['deployment_uuid']['exclude'] = TRUE;
   /* Field: Deploy Extra: Entity UUID */
   $handler->display->display_options['fields']['entity_uuid']['id'] = 'entity_uuid';
   $handler->display->display_options['fields']['entity_uuid']['table'] = 'deploy_extra_import_log';
@@ -290,15 +307,14 @@ function deploy_extra_log_views_default_views() {
   $handler->display->display_options['fields']['timestamp']['table'] = 'deploy_extra_import_log';
   $handler->display->display_options['fields']['timestamp']['field'] = 'timestamp';
   $handler->display->display_options['fields']['timestamp']['date_format'] = 'long';
-  /* Field: Deploy Extra: Log Message */
-  $handler->display->display_options['fields']['message']['id'] = 'message';
-  $handler->display->display_options['fields']['message']['table'] = 'deploy_extra_import_log';
-  $handler->display->display_options['fields']['message']['field'] = 'message';
-  /* Sort criterion: Deploy Extra: Log ID */
-  $handler->display->display_options['sorts']['lid']['id'] = 'lid';
-  $handler->display->display_options['sorts']['lid']['table'] = 'deploy_extra_import_log';
-  $handler->display->display_options['sorts']['lid']['field'] = 'lid';
-  $handler->display->display_options['sorts']['lid']['order'] = 'DESC';
+  /* Field: Deploy Extra: Link */
+  $handler->display->display_options['fields']['link']['id'] = 'link';
+  $handler->display->display_options['fields']['link']['table'] = 'deploy_extra_import_log';
+  $handler->display->display_options['fields']['link']['field'] = 'link';
+  /* Field: Deploy Extra: Data Message */
+  $handler->display->display_options['fields']['data_message']['id'] = 'data_message';
+  $handler->display->display_options['fields']['data_message']['table'] = 'deploy_extra_import_log';
+  $handler->display->display_options['fields']['data_message']['field'] = 'data_message';
   /* Filter criterion: Deploy Extra: Deployment UUID */
   $handler->display->display_options['filters']['deployment_uuid']['id'] = 'deployment_uuid';
   $handler->display->display_options['filters']['deployment_uuid']['table'] = 'deploy_extra_import_log';
@@ -347,38 +363,6 @@ function deploy_extra_log_views_default_views() {
     1 => 0,
     11 => 0,
   );
-  /* Filter criterion: Deploy Extra: Entity Type */
-  $handler->display->display_options['filters']['entity_type']['id'] = 'entity_type';
-  $handler->display->display_options['filters']['entity_type']['table'] = 'deploy_extra_import_log';
-  $handler->display->display_options['filters']['entity_type']['field'] = 'entity_type';
-  $handler->display->display_options['filters']['entity_type']['group'] = 1;
-  $handler->display->display_options['filters']['entity_type']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['entity_type']['expose']['operator_id'] = 'entity_type_op';
-  $handler->display->display_options['filters']['entity_type']['expose']['label'] = 'Entity Type';
-  $handler->display->display_options['filters']['entity_type']['expose']['use_operator'] = TRUE;
-  $handler->display->display_options['filters']['entity_type']['expose']['operator'] = 'entity_type_op';
-  $handler->display->display_options['filters']['entity_type']['expose']['identifier'] = 'entity_type';
-  $handler->display->display_options['filters']['entity_type']['expose']['remember_roles'] = array(
-    2 => '2',
-    1 => 0,
-    11 => 0,
-  );
-  /* Filter criterion: Deploy Extra: Import status */
-  $handler->display->display_options['filters']['status']['id'] = 'status';
-  $handler->display->display_options['filters']['status']['table'] = 'deploy_extra_import_log';
-  $handler->display->display_options['filters']['status']['field'] = 'status';
-  $handler->display->display_options['filters']['status']['group'] = 1;
-  $handler->display->display_options['filters']['status']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['status']['expose']['operator_id'] = 'status_op';
-  $handler->display->display_options['filters']['status']['expose']['label'] = 'Import status';
-  $handler->display->display_options['filters']['status']['expose']['use_operator'] = TRUE;
-  $handler->display->display_options['filters']['status']['expose']['operator'] = 'status_op';
-  $handler->display->display_options['filters']['status']['expose']['identifier'] = 'status';
-  $handler->display->display_options['filters']['status']['expose']['remember_roles'] = array(
-    2 => '2',
-    1 => 0,
-    11 => 0,
-  );
   /* Filter criterion: Deploy Extra: Import time */
   $handler->display->display_options['filters']['timestamp']['id'] = 'timestamp';
   $handler->display->display_options['filters']['timestamp']['table'] = 'deploy_extra_import_log';
@@ -395,13 +379,68 @@ function deploy_extra_log_views_default_views() {
     1 => 0,
     11 => 0,
   );
+  /* Filter criterion: Deploy Extra: Entity Type */
+  $handler->display->display_options['filters']['entity_type']['id'] = 'entity_type';
+  $handler->display->display_options['filters']['entity_type']['table'] = 'deploy_extra_import_log';
+  $handler->display->display_options['filters']['entity_type']['field'] = 'entity_type';
+  $handler->display->display_options['filters']['entity_type']['value'] = array(
+    'all' => 'all',
+    'comment' => 'comment',
+    'field_collection_item' => 'field_collection_item',
+    'file' => 'file',
+    'node' => 'node',
+    'taxonomy_term' => 'taxonomy_term',
+    'user' => 'user',
+  );
+  $handler->display->display_options['filters']['entity_type']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['entity_type']['expose']['operator_id'] = 'entity_type_op';
+  $handler->display->display_options['filters']['entity_type']['expose']['label'] = 'Entity Type';
+  $handler->display->display_options['filters']['entity_type']['expose']['operator'] = 'entity_type_op';
+  $handler->display->display_options['filters']['entity_type']['expose']['identifier'] = 'entity_type';
+  $handler->display->display_options['filters']['entity_type']['expose']['multiple'] = TRUE;
+  $handler->display->display_options['filters']['entity_type']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    11 => 0,
+  );
+  $handler->display->display_options['filters']['entity_type']['group_info']['label'] = 'Entity Type';
+  $handler->display->display_options['filters']['entity_type']['group_info']['identifier'] = 'entity_type';
+  $handler->display->display_options['filters']['entity_type']['group_info']['remember'] = FALSE;
+  $handler->display->display_options['filters']['entity_type']['group_info']['group_items'] = array(
+    1 => array(),
+    2 => array(),
+    3 => array(),
+  );
+  /* Filter criterion: Deploy Extra: Import status */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'deploy_extra_import_log';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = array(
+    5 => '5',
+    0 => '0',
+    1 => '1',
+    3 => '3',
+    4 => '4',
+    2 => '2',
+  );
+  $handler->display->display_options['filters']['status']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['status']['expose']['operator_id'] = 'status_op';
+  $handler->display->display_options['filters']['status']['expose']['label'] = 'Import status';
+  $handler->display->display_options['filters']['status']['expose']['operator'] = 'status_op';
+  $handler->display->display_options['filters']['status']['expose']['identifier'] = 'status';
+  $handler->display->display_options['filters']['status']['expose']['multiple'] = TRUE;
+  $handler->display->display_options['filters']['status']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    11 => 0,
+  );
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
-  $handler->display->display_options['path'] = 'admin/structure/deploy/deploy-extra-log';
-  $handler->display->display_options['menu']['type'] = 'tab';
+  $handler->display->display_options['path'] = module_exists('deploy_ui') ? 'admin/structure/deploy/deploy-extra-log' : 'admin/reports/deploy-extra-log';
+  $handler->display->display_options['menu']['type'] = module_exists('deploy_ui') ? 'tab' : 'normal';
   $handler->display->display_options['menu']['title'] = 'Deploy Extra Log';
-  $handler->display->display_options['menu']['weight'] = '100';
+  $handler->display->display_options['menu']['weight'] = 50;
   $handler->display->display_options['menu']['name'] = 'management';
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['menu']['context_only_inline'] = 0;

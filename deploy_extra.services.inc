@@ -1,7 +1,15 @@
 <?php
 
 /**
+ * @file
+ * Services functions for the deploy_extra module.
+ */
+
+/**
  * Implements hook_services_resources_alter().
+ *
+ * Alter update operation callback, to make use the additional deploy modes when
+ * exposing them through Services.
  *
  */
 function deploy_extra_services_resources_alter(&$resources, &$endpoint) {
@@ -32,7 +40,7 @@ function _deploy_extra_services_update($entity_type, $uuid, $entity) {
     $config = $entity['__metadata']['deploy_extra'];
 
     // Perform update/save operations.
-    deloy_extra_import_entity($entity_type, $uuid, $entity, $config);
+    deploy_extra_import_entity($entity_type, $uuid, $entity, $config);
     return $entity;
   }
 
@@ -54,8 +62,7 @@ function _deploy_extra_services_update($entity_type, $uuid, $entity) {
       }
       entity_uuid_save($entity_type, $entity);
       return $entity;
-    }
-    catch (Exception $exception) {
+    } catch (Exception $exception) {
       watchdog_exception('uuid_services', $exception);
       return services_error($exception, 406, $entity);
     }
@@ -63,7 +70,7 @@ function _deploy_extra_services_update($entity_type, $uuid, $entity) {
 }
 
 /**
- * Just storing old save/update callback.
+ * Storing old save/update service callback.
  *
  * @param bool $callback
  * @return bool

@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Contains DeployExtraFormat interface.
+ */
+
+/**
  * The interface for export format.
  */
 interface DeployExtraFormat {
