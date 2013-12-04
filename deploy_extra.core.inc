@@ -66,7 +66,7 @@ function deploy_extra_import_entity($entity_type, $uuid, $entity, $config) {
 }
 
 /**
- * Implements hook_deloy_extra_import_callbacks().
+ * Implements hook_deploy_extra_import_callbacks().
  */
 function deploy_extra_deploy_extra_import_callbacks(&$callbacks, &$config, $uuid, $entity_type) {
 
