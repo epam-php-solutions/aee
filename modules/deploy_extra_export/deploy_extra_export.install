@@ -41,49 +41,56 @@ function deploy_extra_export_install() {
  * Implements hook_uninstall().
  */
 function deploy_extra_export_uninstall() {
+  // Delete fake endpoint for DeployProcessorForm plugin.
   db_delete('deploy_endpoints')
     ->condition('name', 'deploy_extra_export_endpoint')
     ->execute();
 
+  // Get all plan names by DeployProcessorForm.
   $plans = db_select('deploy_plans', 'dp')
     ->fields('dp', array('name'))
     ->condition('dp.processor_plugin', 'DeployProcessorForm')
     ->execute()
     ->fetchAll();
 
-  $plans_names = array();
-
   if (!empty($plans)) {
-    foreach ($plans as $plan) {
-      $plans_names[] = $plan['name'];
+    foreach ($plans as $key => $plan) {
+      $plans[$plan->name] = $plan->name;
+      unset($plans[$key]);
     }
-  }
 
-  if (!empty($plans_names)) {
+    // Get all uuids by plan names.
     $uuids = db_select('deploy_deployments', 'dd')
       ->fields('dd', array('uuid'))
-      ->condition('dd.plan_name', $plans_names, 'IN')
+      ->condition('dd.plan_name', $plans, 'IN')
       ->execute()
       ->fetchAll();
 
-    $uuids_arr = array();
-
     if (!empty($uuids)) {
-      foreach ($uuids as $uuid) {
-        $uuids_arr[] = $uuid['uuid'];
+      foreach ($uuids as $key => $uuid) {
+        $uuids[$uuid->uuid] = $uuid->uuid;
+        unset($uuids[$key]);
       }
 
+      // Clear records in log by uuids.
       db_delete('deploy_log')
-        ->condition('uuid', $uuids_arr, 'IN')
+        ->condition('uuid', $uuids, 'IN')
         ->execute();
     }
 
-    db_delete('deploy_plans')
-      ->condition('name', $plans_names, 'IN')
+    // Clear records by plan names.
+    db_delete('deploy_deployments')
+      ->condition('plan_name', $plans, 'IN')
       ->execute();
 
+    // Clear records by plan names.
+    db_delete('deploy_manager_entities')
+      ->condition('plan_name', $plans, 'IN')
+      ->execute();
+
+    // Clear records by plan names.
     db_delete('deploy_plans')
-      ->condition('name', $plans_names, 'IN')
+      ->condition('name', $plans, 'IN')
       ->execute();
   }
 }
