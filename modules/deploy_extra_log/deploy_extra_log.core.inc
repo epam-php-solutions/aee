@@ -242,7 +242,6 @@ function deploy_extra_log_message_to_text($data) {
  *
  * @return array of status/statuses or False
  */
-
 function _deploy_extra_log_status_to_string($status = NULL) {
 
   $statuses = array(
@@ -263,5 +262,4 @@ function _deploy_extra_log_status_to_string($status = NULL) {
   }
 
   return FALSE;
-
 }
