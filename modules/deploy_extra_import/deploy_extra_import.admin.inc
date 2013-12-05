@@ -226,7 +226,7 @@ function deploy_extra_import_entity_import_form_submit($form, $form_state) {
   $operations = array();
 
   // Default function name for import entity.
-  $import_function = 'deploy_extra_import_entity_update';
+  $import_function = 'deploy_extra_import_import_entity';
 
   if (!empty($import_config) && function_exists('deploy_extra_import_entity')) {
     $import_function = 'deploy_extra_import_entity';
@@ -255,6 +255,7 @@ function deploy_extra_import_entity_import_form_submit($form, $form_state) {
     'title' => t('Importing...', array(), $context),
     'operations' => $operations,
     'finished'   => 'deploy_extra_import_batch_finished_operation',
+    'file' => drupal_get_path('module', 'deploy_extra_import') . '/deploy_extra_import.admin.inc',
   );
 
   batch_set($batch);
@@ -262,11 +263,11 @@ function deploy_extra_import_entity_import_form_submit($form, $form_state) {
 }
 
 /**
- * Callback for the 'update' method.
+ * Import function when deploy_extra_import_entity is not exist.
  *
  * @see entity_uuid_save()
  */
-function deploy_extra_import_entity_update($entity_type, $uuid, $entity, $config) {
+function deploy_extra_import_import_entity($entity_type, $uuid, $entity, $config) {
   try {
     $controller = entity_get_controller($entity_type);
     if ($controller instanceof EntityAPIControllerInterface) {
