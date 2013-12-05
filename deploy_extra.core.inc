@@ -12,6 +12,7 @@
  * @param $uuid
  * @param $entity
  * @param $config
+ * @return mixed
  */
 function deploy_extra_import_entity($entity_type, $uuid, $entity, $config) {
 

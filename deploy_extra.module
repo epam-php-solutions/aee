@@ -47,6 +47,40 @@ function deploy_extra_form_alter(&$form, &$form_state, $form_id) {
       }
     }
   }
+
+  // Alter the import form and add tmode & skip to import config.
+  if ($form_id == 'deploy_extra_import_entity_import_form') {
+    $form['import']['import_config']['tmode'] = array(
+      '#title' => t('Test mode'),
+      '#description' => t('Select this if the test mode should be enabled. All entities will not be created/updated.'),
+      '#type' => 'checkbox',
+      '#default_value' => 0,
+      '#weight' => -100,
+    );
+
+    $form['import']['import_config']['skip'] = array(
+      '#title' => t('Skip mode'),
+      '#description' => t('Select this if the skip mode should be enabled. Existing entities will be skipped.'),
+      '#type' => 'checkbox',
+      '#default_value' => 0,
+      '#weight' => -99,
+      '#states' => array(
+        'disabled' => array(
+          ':input[name="tmod"]' => array(
+            'checked' => TRUE,
+          )
+        ),
+      )
+    );
+  }
+}
+
+/**
+ * Implements hook_deploy_extra_config_form_alter().
+ */
+function deploy_extra_deploy_extra_config_form_alter(&$form, &$form_state, &$values) {
+  $values['tmod'] = $form_state['values']['tmode'];
+  $values['skip'] = $form_state['values']['skip'];
 }
 
 /**

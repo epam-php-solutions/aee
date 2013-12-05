@@ -18,15 +18,8 @@ module_load_include('inc', 'deploy_extra_log', 'deploy_extra_log.core');
 /**
  * Implements hook_deploy_extra_config_form_alter().
  */
-function deploy_extra_log_deploy_extra_config_form_alter(&$form, &$form_state, $values) {
-  // Settings for using advanced logging mode.
-  $form['adv_log'] = array(
-    '#title' => t('Advanced Logging'),
-    '#description' => t("Select this if the advanced logging mode should be enabled"),
-    '#type' => 'checkbox',
-    '#default_value' => $values['adv_log'],
-    '#weight' => 8,
-  );
+function deploy_extra_log_deploy_extra_config_form_alter(&$form, &$form_state, &$values) {
+  $values['adv_log'] = $form_state['values']['adv_log'];
 }
 
 /**
@@ -93,4 +86,19 @@ function deploy_extra_log_adv_log_ability($config) {
     return TRUE;
   }
   return FALSE;
+}
+
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *   Alter the import form and add log to import config.
+ */
+function deploy_extra_log_form_deploy_extra_import_entity_import_form_alter(&$form, &$form_state, $form_id) {
+  $form['import']['import_config']['adv_log'] = array(
+    '#title' => t('Advanced Logging'),
+    '#description' => t("Select this if the advanced logging mode should be enabled"),
+    '#type' => 'checkbox',
+    '#default_value' => 0,
+    '#weight' => 8,
+  );
 }
