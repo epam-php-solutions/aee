@@ -57,7 +57,7 @@ function deploy_extra_import_entity($entity_type, $uuid, $entity, $config) {
   }
 
   // Allow modules to do something after the deploy process has been finished.
-  module_invoke_all('hook_deploy_extra_import_complete', $entity_type, $entity, $uuid, $config, $status);
+  module_invoke_all('deploy_extra_import_complete', $entity_type, $entity, $uuid, $config, $status);
 
   // Return error if deploy has been failed.
   if ($status == DEPLOY_EXTRA_IMPORT_STATUS_FAILED) {
