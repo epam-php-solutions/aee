@@ -264,7 +264,7 @@ function deploy_extra_log_message_to_text($data) {
  *   The deploy process statuses - examples are 0, 1.
  *
  * @return
- *   Array of status/statuses or readable text or False.
+ *   Array of status/statuses of readable text or False.
  */
 function _deploy_extra_log_status_to_string($status = NULL) {
 
