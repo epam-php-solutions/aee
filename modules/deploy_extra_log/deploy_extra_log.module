@@ -70,7 +70,8 @@ function deploy_extra_log_deploy_extra_import_callbacks(&$callbacks, $config) {
  */
 function deploy_extra_log_deploy_extra_import_complete($entity_type, $entity, $uuid, $config, $status) {
   // Update the deploy status.
-  _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, $status);
+  $vuuid = deploy_extra_get_vuuid_from_entity($entity, $entity_type);
+  deploy_extra_import_log_status($config['deployment_key'], $uuid, $entity_type, $status, $vuuid);
 }
 
 /**
