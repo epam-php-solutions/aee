@@ -67,20 +67,8 @@ function _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status,
 function deploy_extra_import_log_status($deployment_key, $uuid, $entity_type, $status, $entity_vuuid = NULL) {
 
   $data = NULL;
-
   _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status, $data, $entity_vuuid);
 
-  /*$update = db_update(DEPLOY_EXTRA_LOG_TABLE_NAME)
-    ->fields(array('status' => $status))
-    ->condition('deployment_uuid', $deployment_key)
-    ->condition('entity_type', $entity_type)
-    ->condition('entity_uuid', $uuid);
-
-  if (!empty($entity_vuuid)) {
-    $update->condition('entity_vuuid', $entity_vuuid);
-  }
-
-  $update->execute();*/
 }
 
 /**
@@ -89,20 +77,6 @@ function deploy_extra_import_log_status($deployment_key, $uuid, $entity_type, $s
 function deploy_extra_import_log($deployment_key, $uuid, $entity_type, $data = array(), $entity_vuuid = NULL) {
   $status = DEPLOY_EXTRA_IMPORT_STATUS_PROCESSED;
   _deploy_extra_import_log($deployment_key, $uuid, $entity_type, $status, $data, $entity_vuuid);
-}
-
-
-/**
- * @param $entity_type
- * @param $entity
- * @param $uuid
- * @param $config
- * @param $status
- */
-function _deploy_extra_update_status_log($entity_type, $entity, $uuid, $config, $status) {
-  // Check whether the entity supports revision.
-  $vuuid = deploy_extra_get_vuuid_from_entity($entity, $entity_type);
-  deploy_extra_import_log_status($config['deployment_key'], $uuid, $entity_type, $status, $vuuid);
 }
 
 /*
