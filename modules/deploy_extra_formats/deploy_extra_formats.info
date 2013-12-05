@@ -1,4 +1,4 @@
-name = Deploy Extra Formats
+name = Deployment Extra Formats
 description = Provides export|import formats.
 package = Deployment
 core = 7.x

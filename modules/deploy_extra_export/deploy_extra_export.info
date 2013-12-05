@@ -1,4 +1,4 @@
-name = Deploy Extra Export
+name = Deployment Extra Export
 description = Export entities data to form or to file with.
 package = Deployment
 core = 7.x

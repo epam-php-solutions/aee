@@ -8,9 +8,6 @@
 // Translation context.
 define('DEPLOY_EXTRA_IMPORT_TRANSLATE_CONTEXT', 'deploy_extra_import');
 
-// Import form ID.
-define('DEPLOY_EXTRA_IMPORT_FORM_ID', 'deploy-extra-import-form-id');
-
 // Include needed files.
 module_load_include('inc', 'deploy_extra_import', 'deploy_extra_import.batch');
 

@@ -20,9 +20,6 @@ function deploy_extra_import_entity_import_form($form, &$form_state) {
   // Use in translation context.
   $context = array('context' => DEPLOY_EXTRA_IMPORT_TRANSLATE_CONTEXT);
 
-  // Set form ID.
-  $form['#attributes'] = array('id' => DEPLOY_EXTRA_IMPORT_FORM_ID);
-
   // Fieldset.
   $form['import'] = array(
     '#type' => 'fieldset',
@@ -39,6 +36,7 @@ function deploy_extra_import_entity_import_form($form, &$form_state) {
     '#options' => $options['plugins_formats'],
     '#default_value' => 'DeployExtraJSON',
     '#required' => TRUE,
+    '#weight' => 1,
   );
 
   // Add config plugins forms.
@@ -54,6 +52,7 @@ function deploy_extra_import_entity_import_form($form, &$form_state) {
     '#options' => $methods,
     '#default_value' => 'form',
     '#required' => TRUE,
+    '#weight' => 2,
   );
 
   // Import text area form.
@@ -78,6 +77,7 @@ function deploy_extra_import_entity_import_form($form, &$form_state) {
         ),
       ),
     ),
+    '#weight' => 3,
   );
 
   // Path to file in directory.
@@ -103,6 +103,7 @@ function deploy_extra_import_entity_import_form($form, &$form_state) {
         ),
       ),
     ),
+    '#weight' => 4,
   );
 
   // File upload form.
@@ -131,11 +132,13 @@ function deploy_extra_import_entity_import_form($form, &$form_state) {
         ),
       ),
     ),
+    '#weight' => 5,
   );
 
   // Wrapper for action buttons.
   $form['import']['actions'] = array(
     '#type' => 'actions',
+    '#weight' => 100,
   );
 
   // Submit button.
@@ -188,7 +191,7 @@ function deploy_extra_import_entity_import_form_validate($form, &$form_state) {
 
   // If have empty $lock_name, set the error and reload the page.
   if (!$lock_name) {
-    $mess = 'Probably you have mixed format data to be imported or have tried to import incorrect data. Please check the selected format and try again';
+    $mess = 'Probably you have mixed format data to be imported or have tried to import incorrect data. Please check the selected format and try again.';
     drupal_set_message(t($mess, array(), $context), 'error');
     $form_state['rebuild'] = TRUE;
     return;
@@ -214,7 +217,7 @@ function deploy_extra_import_entity_import_form_submit($form, $form_state) {
   $import_config = array();
 
   // Let other modules have their say.
-  drupal_alter('deploy_extra_config_form', $form_state, $import_config);
+  drupal_alter('deploy_extra_config_form', $form, $form_state, $import_config);
 
   // Import data.
   $data = $form_state['deploy_extra_import_data'];
@@ -225,8 +228,8 @@ function deploy_extra_import_entity_import_form_submit($form, $form_state) {
   // Default function name for import entity.
   $import_function = 'deploy_extra_import_entity_update';
 
-  if (!empty($import_config) && function_exists('deloy_extra_import_entity')) {
-    $import_function = 'deloy_extra_import_entity';
+  if (!empty($import_config) && function_exists('deploy_extra_import_entity')) {
+    $import_function = 'deploy_extra_import_entity';
   }
 
   if (!empty($data['entities'])) {
@@ -274,8 +277,7 @@ function deploy_extra_import_entity_update($entity_type, $uuid, $entity, $config
     }
     entity_uuid_save($entity_type, $entity);
     return $entity;
-  }
-  catch (Exception $exception) {
+  } catch (Exception $exception) {
     watchdog_exception('deploy_extra_import', $exception);
     return services_error($exception, 406, $entity);
   }
