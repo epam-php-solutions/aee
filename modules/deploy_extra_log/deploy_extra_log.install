@@ -11,7 +11,7 @@
 function deploy_extra_log_schema() {
   $schema = array();
 
-  $schema[DEPLOY_EXTRA_LOG_TABLE_NAME] = array(
+  $schema['deploy_extra_import_log'] = array(
     'description' => 'Base table holding deployment logs per import entity.',
     'fields' => array(
       'lid' => array(
@@ -57,14 +57,8 @@ function deploy_extra_log_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'message' => array(
-        'description' => 'Complementary message, e.g. the exception in case of a failure.',
-        'type' => 'text',
-        'not null' => FALSE,
-        'size' => 'big',
-      ),
       'data' => array(
-        'description' => 'The additional serialized data.',
+        'description' => 'The array of serialized data.',
         'type' => 'blob',
         'not null' => FALSE,
         'size' => 'big',
