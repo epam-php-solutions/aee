@@ -18,7 +18,7 @@ function deploy_extra_import_permission() {
   return array(
     'administer deploy import' => array(
       'title' => t('Administer import deployments'),
-      'description' => t('Import data of entities with form or file.'),
+      'description' => t('Import entities.'),
     ),
   );
 }
@@ -28,8 +28,7 @@ function deploy_extra_import_permission() {
  */
 function deploy_extra_import_menu() {
   $items['admin/structure/deploy/import'] = array(
-    'title' => 'Import data of entities',
-    'description' => 'Import entities from file or form.',
+    'title' => 'Import entities',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('deploy_extra_import_entity_import_form'),
     'access arguments' => array('administer deploy import'),

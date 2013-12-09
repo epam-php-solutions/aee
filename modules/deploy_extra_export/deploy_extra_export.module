@@ -19,7 +19,7 @@ function deploy_extra_export_permission() {
   return array(
     'administer deploy export' => array(
       'title' => t('Administer export deployments'),
-      'description' => t('Export and import data of entities with form or file.'),
+      'description' => t('Export entities.'),
     ),
   );
 }
